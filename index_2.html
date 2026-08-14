@@ -1,0 +1,1167 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carameleras y Acuerdos PDV · PBA Costa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --frambuesa:#FF3D77;
+  --frambuesa-o:#D91F5A;
+  --violeta:#7B5CFF;
+  --turquesa:#00BFD8;
+  --amarillo:#FFC53D;
+  --naranja:#FF7A2F;
+  --verde:#16C79A;
+  --verde-o:#0FA37D;
+  --rojo:#FF4757;
+  --rojo-o:#DB2C3C;
+  --tinta:#3B2A52;
+  --tinta-2:#8A7B9C;
+  --papel:#FFF6FA;
+  --blanco:#FFFFFF;
+  --linea:#F0E4EC;
+  --display:"Fredoka",system-ui,sans-serif;
+  --body:"Nunito",system-ui,-apple-system,sans-serif;
+  --sombra:0 2px 0 rgba(59,42,82,.05), 0 10px 24px -12px rgba(59,42,82,.28);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--papel);color:var(--tinta);font-family:var(--body);font-size:16px;
+  line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--violeta);outline-offset:2px;border-radius:6px}
+h1,h2,h3,h4{font-family:var(--display);font-weight:600;letter-spacing:-.01em;margin:0}
+
+.pantalla{display:none;min-height:100vh;flex-direction:column}
+.pantalla.activa{display:flex}
+.envoltura{width:100%;max-width:820px;margin:0 auto;padding:18px 18px 120px}
+
+/* ══════ PORTADA ══════ */
+#portada{position:relative;overflow:hidden;justify-content:flex-end;
+  background:linear-gradient(158deg,#FF5C8D 0%,#FF3D77 32%,#9B4BFF 78%,#7B5CFF 100%)}
+.burbuja{position:absolute;border-radius:50%;background:rgba(255,255,255,.14);pointer-events:none}
+.b1{width:220px;height:220px;top:-70px;right:-60px}
+.b2{width:120px;height:120px;top:120px;left:-45px;background:rgba(255,197,61,.28)}
+.b3{width:70px;height:70px;top:56%;right:12%;background:rgba(0,191,216,.3)}
+.caramelo{position:absolute;border-radius:9px;transform:rotate(var(--r,18deg));pointer-events:none;
+  background:rgba(255,255,255,.2)}
+.c1{width:34px;height:34px;top:20%;left:16%;--r:24deg}
+.c2{width:22px;height:22px;top:34%;right:24%;--r:-15deg;background:rgba(255,197,61,.4)}
+.c3{width:28px;height:28px;bottom:32%;left:9%;--r:40deg;background:rgba(0,191,216,.35)}
+
+.tapa{position:relative;z-index:2;padding:0 24px 40px;max-width:640px;width:100%;margin:auto auto 0}
+.marca{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.22);
+  color:#fff;border-radius:99px;padding:7px 15px;font-weight:700;font-size:12.5px;
+  letter-spacing:.14em;text-transform:uppercase;margin-bottom:26px;backdrop-filter:blur(6px)}
+.tapa h1{color:#fff;font-family:var(--display);font-weight:700;
+  font-size:clamp(42px,13.5vw,80px);line-height:.94;letter-spacing:-.03em;
+  text-shadow:0 6px 24px rgba(120,20,70,.28)}
+.tapa h1 em{font-style:normal;color:var(--amarillo);display:block}
+.tapa p{color:rgba(255,255,255,.94);font-size:17px;margin:20px 0 30px;max-width:400px;font-weight:600}
+.pastilla{display:inline-flex;align-items:center;gap:9px;background:#fff;color:var(--frambuesa);
+  border-radius:99px;padding:9px 18px;font-weight:800;font-size:13px;letter-spacing:.12em;
+  text-transform:uppercase;margin-top:24px;box-shadow:0 6px 18px rgba(120,20,70,.24)}
+.pastilla i{width:10px;height:10px;border-radius:50%;background:var(--turquesa);display:block}
+.cascada-svg{position:absolute;right:-10px;bottom:118px;width:170px;opacity:.34;pointer-events:none}
+
+/* ══════ BOTONES ══════ */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;border:0;cursor:pointer;
+  background:var(--frambuesa);color:#fff;border-radius:99px;padding:15px 30px;
+  font-family:var(--display);font-weight:600;font-size:17px;
+  box-shadow:0 5px 0 var(--frambuesa-o);transition:transform .1s,box-shadow .1s}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--frambuesa-o)}
+.btn.ancho{width:100%}
+.btn.blanco{background:#fff;color:var(--frambuesa);box-shadow:0 5px 0 rgba(160,30,90,.28)}
+.btn.verde{background:var(--verde);box-shadow:0 5px 0 var(--verde-o)}
+.btn.rojo{background:var(--rojo);box-shadow:0 5px 0 var(--rojo-o)}
+.btn.suave{background:#fff;color:var(--tinta);box-shadow:0 0 0 2px var(--linea) inset, 0 3px 0 var(--linea)}
+.btn.chica{padding:11px 18px;font-size:15px}
+.link{background:none;border:0;color:var(--violeta);font-weight:700;cursor:pointer;padding:8px;
+  font-size:14.5px;text-decoration:underline;text-underline-offset:3px}
+
+/* ══════ CABECERA ══════ */
+.cabecera{background:#fff;padding:14px 18px;display:flex;align-items:center;gap:12px;
+  border-bottom:1px solid var(--linea);position:sticky;top:0;z-index:20}
+.volver{background:var(--papel);border:0;width:38px;height:38px;border-radius:50%;cursor:pointer;
+  color:var(--tinta);display:grid;place-items:center;flex:none}
+.cabecera-txt{flex:1;min-width:0}
+.cabecera-txt b{display:block;font-family:var(--display);font-size:16px;font-weight:600;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cabecera-txt span{font-size:12.5px;color:var(--tinta-2);font-weight:600}
+.punto{width:12px;height:12px;border-radius:50%;background:var(--c,var(--frambuesa));flex:none}
+
+/* ══════ LISTA DE TD ══════ */
+.titulazo{font-size:clamp(28px,7vw,40px);font-weight:700;line-height:1.05;margin:22px 0 6px}
+.bajada{color:var(--tinta-2);font-size:15.5px;font-weight:600;margin:0 0 22px}
+.rejilla-td{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.td{background:#fff;border:0;border-radius:22px;padding:18px 16px;cursor:pointer;text-align:left;
+  box-shadow:var(--sombra);transition:transform .12s;position:relative;overflow:hidden;color:var(--tinta)}
+.td:active{transform:scale(.97)}
+.td-globo{width:44px;height:44px;border-radius:16px;background:var(--c);display:grid;place-items:center;
+  color:#fff;font-family:var(--display);font-weight:700;font-size:19px;margin-bottom:12px;
+  box-shadow:0 6px 14px -4px var(--c)}
+.td-nom{font-family:var(--display);font-weight:600;font-size:17px;line-height:1.15;display:block;margin-bottom:3px}
+.td-zona{font-size:12.5px;color:var(--tinta-2);font-weight:700;display:block;margin-bottom:10px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.td-num{display:flex;gap:12px;font-size:12.5px;font-weight:700;color:var(--tinta-2)}
+.td-num b{font-family:var(--display);font-size:17px;color:var(--c);display:block;line-height:1}
+
+/* ══════ LOGIN ══════ */
+.ficha{background:#fff;border-radius:26px;padding:24px;max-width:430px;margin:24px auto 0;box-shadow:var(--sombra)}
+.campo{margin-bottom:15px}
+.campo label{display:block;font-size:12.5px;font-weight:800;color:var(--tinta-2);
+  text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.campo input,.campo select,.campo textarea{width:100%;background:var(--papel);border:2px solid var(--linea);
+  border-radius:14px;padding:13px 14px;color:var(--tinta);font-weight:600}
+.campo input:focus,.campo select:focus,.campo textarea:focus{border-color:var(--violeta);outline:none}
+.campo textarea{min-height:88px;resize:vertical}
+.campo input::placeholder,.campo textarea::placeholder{color:#BDB0C9;font-weight:600}
+.pista{font-size:12.5px;color:var(--tinta-2);font-weight:600;margin:6px 0 0}
+.roles{display:grid;gap:10px;margin:4px 0 18px}
+.rol{background:var(--papel);border:2px solid var(--linea);border-radius:18px;padding:14px;
+  cursor:pointer;text-align:left;display:flex;gap:12px;align-items:center;transition:.12s}
+.rol[aria-pressed="true"]{border-color:var(--frambuesa);background:#FFF0F5}
+.rol-ico{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;color:#fff;flex:none}
+.rol b{display:block;font-family:var(--display);font-weight:600;font-size:16px}
+.rol span{font-size:12.5px;color:var(--tinta-2);font-weight:600;line-height:1.3}
+.error{color:var(--rojo);font-size:14px;font-weight:700;margin:-6px 0 12px;min-height:20px}
+.nota{font-size:12.5px;color:var(--tinta-2);font-weight:600;text-align:center;margin-top:16px;line-height:1.5}
+
+/* ══════ BARRA INFERIOR ══════ */
+.barra-abajo{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--linea);
+  display:flex;padding:8px 10px calc(8px + env(safe-area-inset-bottom));z-index:30;
+  box-shadow:0 -6px 22px -14px rgba(59,42,82,.5)}
+.solapa{flex:1;background:none;border:0;cursor:pointer;padding:7px 4px;border-radius:16px;
+  display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--tinta-2);font-weight:800;font-size:11.5px}
+.solapa[aria-selected="true"]{color:var(--frambuesa);background:#FFF0F5}
+.solapa svg{width:23px;height:23px}
+.fab{position:fixed;right:18px;bottom:calc(84px + env(safe-area-inset-bottom));width:60px;height:60px;
+  border-radius:22px;background:var(--frambuesa);color:#fff;border:0;cursor:pointer;z-index:31;
+  box-shadow:0 6px 0 var(--frambuesa-o), 0 14px 28px -10px rgba(217,31,90,.7);display:grid;place-items:center}
+.fab:active{transform:translateY(4px);box-shadow:0 2px 0 var(--frambuesa-o)}
+.fab svg{width:28px;height:28px}
+
+/* ══════ CONTENIDO ══════ */
+.buscador{width:100%;background:#fff;border:2px solid var(--linea);border-radius:99px;
+  padding:13px 18px;font-weight:600;margin-bottom:14px}
+.filtritos{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px}
+.filtrito{background:#fff;border:2px solid var(--linea);border-radius:99px;padding:8px 15px;
+  font-weight:800;font-size:13.5px;cursor:pointer;white-space:nowrap;color:var(--tinta-2)}
+.filtrito[aria-pressed="true"]{background:var(--violeta);border-color:var(--violeta);color:#fff}
+.numeritos{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:10px;margin-bottom:18px}
+.numerito{background:#fff;border-radius:18px;padding:14px;box-shadow:var(--sombra)}
+.numerito b{font-family:var(--display);font-size:26px;font-weight:700;display:block;line-height:1;color:var(--c,var(--tinta))}
+.numerito span{font-size:11.5px;font-weight:800;color:var(--tinta-2);text-transform:uppercase;letter-spacing:.04em}
+
+.tarjetas{display:flex;flex-direction:column;gap:12px}
+.tarjeta{background:#fff;border-radius:22px;padding:16px;display:flex;gap:13px;align-items:flex-start;
+  cursor:pointer;box-shadow:var(--sombra);transition:transform .12s}
+.tarjeta:active{transform:scale(.985)}
+.tarjeta-ico{width:46px;height:46px;border-radius:16px;display:grid;place-items:center;flex:none;
+  background:var(--c,var(--violeta));color:#fff}
+.tarjeta-cuerpo{flex:1;min-width:0}
+.tarjeta h4{font-size:17px;font-weight:600;margin-bottom:2px}
+.tarjeta .sub{font-size:13.5px;color:var(--tinta-2);font-weight:600;margin-bottom:9px}
+.etiquetas{display:flex;flex-wrap:wrap;gap:6px}
+.etiqueta{font-size:11.5px;font-weight:800;border-radius:8px;padding:4px 8px;
+  background:#F4EFF8;color:#6E5C86}
+.etiqueta.uva{background:#F0EBFF;color:#5B3FE0}
+.etiqueta.agua{background:#E2F8FB;color:#008DA1}
+.etiqueta.sol{background:#FFF4D9;color:#A97A00}
+.etiqueta.alerta{background:#FFE9EB;color:#D62839}
+.estampa{font-size:11.5px;font-weight:800;border-radius:10px;padding:6px 10px;flex:none;white-space:nowrap;
+  text-transform:uppercase;letter-spacing:.03em}
+.estampa.pendiente{background:#FFF4D9;color:#A97A00}
+.estampa.ok{background:#DFF7EF;color:#0B8C6A}
+.estampa.obs{background:#FFE9EB;color:#D62839}
+.estampa.cant{background:var(--violeta);color:#fff;font-family:var(--display);font-size:17px;padding:7px 13px;border-radius:14px}
+.nada{background:#fff;border-radius:22px;padding:34px 22px;text-align:center;box-shadow:var(--sombra)}
+.nada .emo{font-size:38px;display:block;margin-bottom:10px}
+.nada p{color:var(--tinta-2);font-weight:600;margin:0 0 16px}
+
+/* ══════ HOJA ══════ */
+.telon{position:fixed;inset:0;background:rgba(59,42,82,.5);backdrop-filter:blur(3px);display:none;
+  z-index:50;align-items:flex-end;justify-content:center}
+.telon.abierto{display:flex}
+.hoja{background:var(--papel);width:100%;max-width:620px;max-height:94vh;overflow-y:auto;
+  border-radius:28px 28px 0 0;padding:0 18px 28px}
+.hoja-cab{position:sticky;top:0;background:var(--papel);padding:18px 0 14px;display:flex;
+  align-items:center;gap:12px;z-index:2;margin-bottom:4px}
+.hoja-cab h3{flex:1;font-size:21px;font-weight:600;line-height:1.15}
+.equis{background:#fff;border:0;width:38px;height:38px;border-radius:50%;cursor:pointer;flex:none;
+  color:var(--tinta);display:grid;place-items:center;box-shadow:var(--sombra)}
+.bloque{background:#fff;border-radius:22px;padding:16px;margin-bottom:12px;box-shadow:var(--sombra)}
+.bloque > h5{font-family:var(--display);font-size:12.5px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.1em;color:var(--frambuesa);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.bloque > h5::after{content:"";flex:1;height:2px;background:#FFE4EE;border-radius:2px}
+.dupla{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tripla{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+
+.fila-sku{display:grid;grid-template-columns:1fr 62px 62px 40px;gap:7px;margin-bottom:8px}
+.fila-sku input{background:var(--papel);border:2px solid var(--linea);border-radius:12px;padding:11px 8px;
+  font-weight:600;width:100%;min-width:0}
+.fila-sku input[type=number]{text-align:center}
+.rotulos{display:grid;grid-template-columns:1fr 62px 62px 40px;gap:7px;font-size:11px;font-weight:800;
+  color:var(--tinta-2);text-transform:uppercase;margin-bottom:6px}
+.rotulos span:nth-child(2),.rotulos span:nth-child(3){text-align:center}
+.quitar{background:#FFE9EB;border:0;color:var(--rojo);border-radius:12px;cursor:pointer;font-size:16px;font-weight:800}
+
+.motivos{display:flex;flex-direction:column;gap:7px}
+.motivo{display:flex;gap:11px;align-items:flex-start;padding:12px 13px;border-radius:15px;cursor:pointer;
+  background:var(--papel);border:2px solid var(--papel);transition:.12s;font-weight:600;font-size:14.5px}
+.motivo:has(input:checked){background:#FFE9EB;border-color:#FFC2C8}
+.motivo input{accent-color:var(--rojo);width:20px;height:20px;flex:none;margin:1px 0 0}
+.grupo-motivos{font-family:var(--display);font-size:12px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.09em;color:var(--violeta);margin:18px 0 9px}
+
+.fotos{display:flex;gap:9px;flex-wrap:wrap}
+.foto{position:relative;width:78px;height:78px;border-radius:16px;overflow:hidden;background:var(--papel)}
+.foto img{width:100%;height:100%;object-fit:cover;display:block}
+.foto button{position:absolute;top:3px;right:3px;width:23px;height:23px;border-radius:50%;border:0;
+  background:rgba(59,42,82,.72);color:#fff;cursor:pointer;font-size:13px;line-height:1}
+.subir{width:78px;height:78px;border-radius:16px;border:2.5px dashed #DCCFE6;background:var(--papel);
+  color:var(--tinta-2);cursor:pointer;font-size:11.5px;font-weight:800;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:2px;line-height:1.15;text-align:center}
+.subir.pide{border-color:var(--rojo);color:var(--rojo);background:#FFF4F5}
+.subir svg{width:20px;height:20px}
+
+.veredicto{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.cartel{border-radius:18px;padding:13px 15px;font-size:14px;font-weight:700;margin-bottom:12px}
+.cartel.uva{background:#F0EBFF;color:#5B3FE0}
+.cartel.alerta{background:#FFE9EB;color:#D62839}
+.resumen-linea{display:flex;justify-content:space-between;gap:12px;padding:9px 0;
+  border-bottom:1px dashed var(--linea);font-size:14.5px;font-weight:600}
+.resumen-linea:last-child{border:0}
+.resumen-linea b{font-weight:800;text-align:right}
+
+.mensaje{width:100%;background:var(--papel);border:2px dashed #DCCFE6;border-radius:16px;padding:14px;
+  font-size:13.5px;font-weight:600;line-height:1.55;min-height:230px;resize:vertical;font-family:var(--body)}
+.exito{text-align:center;padding:10px 0 2px}
+.exito .emo{font-size:46px;display:block;margin-bottom:8px}
+.exito h3{font-size:24px;font-weight:600;margin-bottom:4px}
+.exito p{color:var(--tinta-2);font-weight:600;margin:0}
+.btn.wasap{background:#25D366;box-shadow:0 5px 0 #128C4A}
+.foto.subiendo{display:grid;place-items:center;background:#F4EFF8}
+.giro{width:24px;height:24px;border:3px solid #DCCFE6;border-top-color:var(--frambuesa);
+  border-radius:50%;animation:girar .8s linear infinite}
+@keyframes girar{to{transform:rotate(360deg)}}
+.aviso-linea{position:fixed;left:0;right:0;top:0;z-index:60;background:var(--amarillo);color:#4A3600;
+  font-size:12.5px;font-weight:800;text-align:center;padding:7px 12px;display:none}
+.btn.wasap:active{box-shadow:0 1px 0 #128C4A}
+.etiqueta.verde{background:#DFF7EF;color:#0B8C6A}
+
+@media (max-width:520px){
+  .dupla{grid-template-columns:1fr}
+  .tripla{grid-template-columns:1fr 1fr}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="aviso-linea" id="aviso-linea"></div>
+
+<!-- ══════════ PORTADA ══════════ -->
+<section class="pantalla activa" id="portada">
+  <div class="burbuja b1"></div><div class="burbuja b2"></div><div class="burbuja b3"></div>
+  <div class="caramelo c1"></div><div class="caramelo c2"></div><div class="caramelo c3"></div>
+  <svg class="cascada-svg" viewBox="0 0 120 90" fill="none" aria-hidden="true">
+    <path d="M4 84h112M12 84V64h34v20M46 64V44h34v40M80 44V24h30v60" stroke="#fff" stroke-width="4" stroke-linejoin="round"/>
+    <rect x="20" y="52" width="12" height="12" rx="3" fill="#fff"/>
+    <rect x="54" y="32" width="12" height="12" rx="3" fill="#fff"/>
+    <rect x="88" y="12" width="12" height="12" rx="3" fill="#fff"/>
+  </svg>
+  <div class="tapa">
+    <div class="marca">🍬 Relevamiento 2026</div>
+    <h1>Carameleras <em>y acuerdos</em></h1>
+    <p>Muebles en depósito y colocados, comodatos y acuerdos de los siete TD.</p>
+    <button class="btn blanco" onclick="ir('tds')">Empezar</button>
+    <div class="pastilla"><i></i> PDV · PBA Costa</div>
+  </div>
+</section>
+
+<!-- ══════════ TDs ══════════ -->
+<section class="pantalla" id="tds">
+  <div class="cabecera">
+    <div class="cabecera-txt"><b>Carameleras y Acuerdos</b><span>PDV · PBA Costa</span></div>
+    <button class="volver" onclick="ir('portada')" aria-label="Inicio">🏠</button>
+  </div>
+  <div class="envoltura" style="padding-bottom:40px">
+    <h2 class="titulazo">¿Con qué TD entrás?</h2>
+    <p class="bajada">Siete distribuidores, cada uno con sus dos Jefes de Ventas.</p>
+    <div class="rejilla-td" id="rejillaTD"></div>
+    <div style="text-align:center;margin-top:18px"><button class="link" onclick="hojaPerfil()">Editar perfiles: zonas y Jefes de Ventas</button></div>
+  </div>
+</section>
+
+<!-- ══════════ LOGIN ══════════ -->
+<section class="pantalla" id="login">
+  <div class="cabecera">
+    <button class="volver" onclick="ir('tds')" aria-label="Volver">←</button>
+    <div class="cabecera-txt"><b id="loginTD">TD</b><span id="loginZona"></span></div>
+    <span class="punto" id="loginPunto"></span>
+  </div>
+  <div class="envoltura">
+    <div class="ficha">
+      <h2 style="font-size:25px;margin-bottom:4px">Hola 👋</h2>
+      <p class="bajada" style="margin-bottom:18px">Elegí con qué rol vas a trabajar hoy.</p>
+      <div class="roles">
+        <button class="rol" id="rolCarga" aria-pressed="true" onclick="elegirRol('carga')">
+          <span class="rol-ico" style="background:var(--turquesa)">📦</span>
+          <span><b>Carga de stock</b><span>Muebles en depósito y colocados, comodatos y acuerdos.</span></span></button>
+        <button class="rol" id="rolControl" aria-pressed="false" onclick="elegirRol('control')">
+          <span class="rol-ico" style="background:var(--naranja)">✅</span>
+          <span><b>Control de mueble</b><span>Recorre, aprueba u observa con motivos y fotos.</span></span></button>
+      </div>
+      <div class="campo" id="cajaEncargado"><label for="encargado">Jefe de Ventas</label>
+        <select id="encargado"></select>
+        <p class="pista">Queda registrado quién cargó cada mueble.</p></div>
+      <div class="campo" id="cajaUsuario" style="display:none"><label for="usuario">Usuario</label>
+        <input id="usuario" autocomplete="username" placeholder="nombre.apellido"></div>
+      <div class="campo"><label for="clave">Contraseña</label>
+        <input id="clave" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+      <div class="error" id="errorLogin"></div>
+      <button class="btn ancho" onclick="entrar()">Entrar</button>
+      <p class="nota">Demo sin servidor: la contraseña es <b>costa2026</b>. Los datos quedan en este dispositivo.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ APP ══════════ -->
+<section class="pantalla" id="app">
+  <div class="cabecera">
+    <span class="punto" id="appPunto"></span>
+    <div class="cabecera-txt"><b id="appTD">TD</b><span id="appUser"></span></div>
+    <button class="volver" onclick="salir()" aria-label="Salir">↩</button>
+  </div>
+  <div class="envoltura" id="contenido"></div>
+  <nav class="barra-abajo" id="barraAbajo"></nav>
+  <button class="fab" id="fab" onclick="nuevoAqui()" aria-label="Agregar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+</section>
+
+<div class="telon" id="telon" onclick="if(event.target===this)cerrarHoja()">
+  <div class="hoja" id="hoja"></div>
+</div>
+
+<script>
+/* ══════════ ICONOS ══════════ */
+const ICO = {
+  caja:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 8l9-5 9 5v8l-9 5-9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>`,
+  local:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9M3 9h18M3 9v11h18V9M9 20v-6h6v6"/></svg>`,
+  panel:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>`,
+  reloj:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`,
+  tilde:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>`,
+  camara:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 8h3l1.5-2h9L18 8h3v12H3V8z"/><circle cx="12" cy="13" r="3.5"/></svg>`,
+  papel:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 2h8l4 4v16H6z"/><path d="M14 2v5h4M9 13h6M9 17h4"/></svg>`
+};
+
+/* ══════════ DATOS ══════════ */
+const NOMBRES_TD = ["Kra y Mar","Dicva","Fuente Seca","Costa Atlántica","San Gregorio","San Gregorio Costa","Terramare del Sur"];
+const COLORES = ["#FF3D77","#7B5CFF","#00BFD8","#FF7A2F","#16C79A","#FFC53D","#E0479E"];
+const CLAVE = "carameleras-costa-v3";
+
+/* ═══ CONEXIÓN CON EL SERVIDOR ═══
+   Pegá acá la URL del Apps Script publicado (termina en /exec). */
+const API = "https://script.google.com/macros/s/AKfycbz86hwFpiVDC8vV10BVGw5x1L0l9va41ac13g449QgaY0z4jq2AFsYDqEa0_BO83D0/exec";
+
+let enLinea = false, cola = [];
+
+async function api(cuerpo){
+  if(!API) throw new Error("Falta configurar la URL del servidor.");
+  const r = await fetch(API, {
+    method:"POST", redirect:"follow",
+    headers:{"Content-Type":"text/plain;charset=utf-8"},   // evita el preflight que Apps Script no responde
+    body: JSON.stringify(cuerpo)
+  });
+  const d = await r.json();
+  if(!d.ok) throw new Error(d.error||"Error del servidor");
+  return d;
+}
+function guardarCache(){
+  const d = JSON.stringify({tds:estado.tds, deposito:estado.deposito, colocados:estado.colocados, cola});
+  try{ localStorage.setItem(CLAVE,d); }catch(_){}
+}
+async function sincronizar(tipo, registro){
+  guardarCache();
+  try{ await api({accion:"guardar", tipo, registro}); marcarLinea(true); await vaciarCola(); }
+  catch(e){ cola.push({accion:"guardar", tipo, registro}); guardarCache(); marcarLinea(false); }
+}
+async function eliminarRemoto(tipo, id){
+  guardarCache();
+  try{ await api({accion:"borrar", tipo, id}); marcarLinea(true); }
+  catch(e){ cola.push({accion:"borrar", tipo, id}); guardarCache(); marcarLinea(false); }
+}
+async function vaciarCola(){
+  if(!cola.length) return;
+  const pendientes = [...cola]; cola = [];
+  for(const p of pendientes){
+    try{ await api(p); }catch(e){ cola.push(p); }
+  }
+  guardarCache();
+  if(cola.length) marcarLinea(false);
+}
+function marcarLinea(ok){
+  enLinea = ok;
+  const b = document.getElementById("aviso-linea");
+  if(!b) return;
+  b.style.display = ok ? "none" : "block";
+  b.textContent = cola.length
+    ? "Sin conexión: hay "+cola.length+" cambio(s) esperando para subir. Se suben solos al recuperar señal."
+    : "Sin conexión con el servidor. Estás trabajando sobre la copia del teléfono.";
+}
+
+let estado = {
+  tds: NOMBRES_TD.map((n,i)=>({id:"td"+(i+1), nombre:n, zona:"",
+    jefes:[{nombre:"Jefe de Ventas 1",tel:""},{nombre:"Jefe de Ventas 2",tel:""}]})),
+  deposito: [], colocados: [], sesion:null
+};
+let borrador=null, revision=null, objetivos={}, vista="deposito", filtro="pendiente";
+
+async function guardar(){ guardarCache(); }
+
+async function cargarDatos(){
+  // 1) caché del teléfono: la app abre al instante aunque no haya señal
+  try{
+    const crudo = localStorage.getItem(CLAVE);
+    if(crudo){ const d = JSON.parse(crudo);
+      if(d.tds) estado.tds = d.tds;
+      if(d.deposito) estado.deposito = d.deposito;
+      if(d.colocados) estado.colocados = d.colocados;
+      if(d.cola) cola = d.cola;
+    }
+  }catch(_){}
+  normalizar(); pintarTDs();
+  // 2) datos frescos del servidor
+  if(!API){ marcarLinea(false); return; }
+  try{
+    await vaciarCola();
+    const d = await api({accion:"listar"});
+    if(d.tds && d.tds.length) estado.tds = d.tds;
+    estado.deposito = d.deposito||[];
+    estado.colocados = d.colocados||[];
+    marcarLinea(true); normalizar(); guardarCache(); pintarTDs();
+    if(estado.sesion) render();
+  }catch(e){ marcarLinea(false); }
+}
+function normalizar(){
+  estado.tds.forEach(t=>{
+    if(!t.jefes) t.jefes = (t.encargados||["Jefe de Ventas 1","Jefe de Ventas 2"]).map(n=>({nombre:n,tel:""}));
+    while(t.jefes.length<2) t.jefes.push({nombre:"Jefe de Ventas "+(t.jefes.length+1),tel:""});
+    delete t.encargados;
+  });
+  estado.colocados.forEach(c=>{ if(c.revision.enviado===undefined) c.revision.enviado=false; });
+}
+function ir(id){ document.querySelectorAll(".pantalla").forEach(s=>s.classList.toggle("activa",s.id===id)); window.scrollTo(0,0); }
+function cerrarHoja(){ document.getElementById("telon").classList.remove("abierto"); }
+function abrirHoja(html){ const h=document.getElementById("hoja"); h.innerHTML=html;
+  document.getElementById("telon").classList.add("abierto"); h.scrollTop=0; }
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const hoy = () => new Date().toLocaleDateString("es-AR",{day:"2-digit",month:"2-digit",year:"numeric"});
+const plata = n => n ? "$ "+Number(n).toLocaleString("es-AR") : "";
+const colorTD = id => COLORES[estado.tds.findIndex(t=>t.id===id)] || COLORES[0];
+
+/* ══════════ TDs ══════════ */
+function pintarTDs(){
+  document.getElementById("rejillaTD").innerHTML = estado.tds.map((t,i)=>{
+    const dep = estado.deposito.filter(d=>d.tdId===t.id).reduce((a,d)=>a+(+d.cantidad||0),0);
+    const col = estado.colocados.filter(c=>c.tdId===t.id).length;
+    const ini = t.nombre.split(" ").filter(p=>p.length>2).slice(0,2).map(p=>p[0]).join("").toUpperCase();
+    return `<button class="td" style="--c:${COLORES[i]}" onclick="elegirTD('${t.id}')">
+      <span class="td-globo">${ini}</span>
+      <span class="td-nom">${esc(t.nombre)}</span>
+      <span class="td-zona">${esc(t.zona || t.jefes.map(j=>j.nombre).join(" · "))}</span>
+      <span class="td-num"><span><b>${dep}</b>depósito</span><span><b>${col}</b>colocados</span></span>
+    </button>`;
+  }).join("");
+}
+function hojaPerfil(soloId){
+  const lista = soloId ? estado.tds.filter(t=>t.id===soloId) : estado.tds;
+  abrirHoja(`<div class="hoja-cab"><h3>${soloId?"Perfil del TD":"Perfiles de los TD"}</h3>
+      <button class="equis" onclick="cerrarHoja()">✕</button></div>
+    <p class="bajada">Los dos Jefes de Ventas de cada TD con su WhatsApp. A ese número llegan los controles.</p>
+    ${lista.map(t=>{ const i = estado.tds.indexOf(t);
+      return `<div class="bloque"><h5 style="color:${COLORES[i]}">${esc(t.nombre)}</h5>
+      <div class="campo"><label>Zona que cubre</label>
+        <input id="zon${i}" value="${esc(t.zona)}" placeholder="Pinamar y Cariló"></div>
+      ${[0,1].map(j=>`<div class="dupla">
+        <div class="campo"><label>Jefe de Ventas ${j+1}</label>
+          <input id="jn${i}_${j}" value="${esc(t.jefes[j].nombre)}" placeholder="Nombre y apellido"></div>
+        <div class="campo"><label>WhatsApp</label>
+          <input id="jt${i}_${j}" type="tel" value="${esc(t.jefes[j].tel)}" placeholder="54 9 223 5551234"></div>
+      </div>`).join("")}
+      <p class="pista">Con código de país y sin el 15: 54 9 + característica + número.</p>
+      </div>`;}).join("")}
+    <button class="btn ancho" onclick="guardarPerfil()">Guardar</button>`);
+}
+function guardarPerfil(){
+  estado.tds.forEach((t,i)=>{
+    const z = document.getElementById("zon"+i); if(!z) return;
+    t.zona = z.value.trim();
+    t.jefes = [0,1].map(j=>({
+      nombre: document.getElementById(`jn${i}_${j}`).value.trim() || ("Jefe de Ventas "+(j+1)),
+      tel: document.getElementById(`jt${i}_${j}`).value.trim()
+    }));
+  });
+  guardarCache(); estado.tds.forEach(t=>sincronizar("tds",t));
+  pintarTDs(); cerrarHoja(); if(estado.sesion) render();
+}
+const jefesConTel = tdId => (estado.tds.find(t=>t.id===tdId).jefes||[]).filter(j=>j.tel.replace(/\D/g,"").length>=8);
+
+let tdElegido=null, rolElegido="carga";
+function elegirTD(id){
+  tdElegido = estado.tds.find(t=>t.id===id);
+  document.getElementById("loginTD").textContent = tdElegido.nombre;
+  document.getElementById("loginZona").textContent = tdElegido.zona || "PBA Costa";
+  document.getElementById("loginPunto").style.setProperty("--c", colorTD(id));
+  document.getElementById("encargado").innerHTML = tdElegido.jefes.map(j=>`<option>${esc(j.nombre)}</option>`).join("");
+  document.getElementById("usuario").value=""; document.getElementById("clave").value="";
+  document.getElementById("errorLogin").textContent=""; elegirRol("carga"); ir("login");
+}
+function elegirRol(r){
+  rolElegido=r;
+  document.getElementById("rolCarga").setAttribute("aria-pressed", r==="carga");
+  document.getElementById("rolControl").setAttribute("aria-pressed", r==="control");
+  document.getElementById("cajaEncargado").style.display = r==="carga"?"block":"none";
+  document.getElementById("cajaUsuario").style.display   = r==="carga"?"none":"block";
+}
+function entrar(){
+  const err = document.getElementById("errorLogin");
+  const quien = rolElegido==="carga" ? document.getElementById("encargado").value
+                                     : document.getElementById("usuario").value.trim();
+  if(!quien){ err.textContent="Escribí tu usuario para continuar."; return; }
+  if(document.getElementById("clave").value!=="costa2026"){
+    err.textContent="La contraseña no coincide. En esta demo es costa2026."; return; }
+  err.textContent="";
+  estado.sesion = {tdId:tdElegido.id, usuario:quien, rol:rolElegido};
+  document.getElementById("appTD").textContent = tdElegido.nombre;
+  document.getElementById("appUser").textContent = quien + " · " + (rolElegido==="carga"?"Carga":"Control");
+  document.getElementById("appPunto").style.setProperty("--c", colorTD(tdElegido.id));
+  vista = rolElegido==="carga" ? "deposito" : "pendientes";
+  pintarBarra(); render(); ir("app");
+}
+function salir(){ estado.sesion=null; pintarTDs(); ir("tds"); }
+
+/* ══════════ NAVEGACIÓN ══════════ */
+const SOLAPAS = {
+  carga:[{id:"deposito",t:"Depósito",i:"caja"},{id:"colocados",t:"Colocados",i:"local"},{id:"resumen",t:"Resumen",i:"panel"}],
+  control:[{id:"pendientes",t:"Pendientes",i:"reloj"},{id:"resueltos",t:"Resueltos",i:"tilde"},{id:"resumen",t:"Resumen",i:"panel"}]
+};
+function pintarBarra(){
+  document.getElementById("barraAbajo").innerHTML = SOLAPAS[estado.sesion.rol].map(s=>
+    `<button class="solapa" aria-selected="${vista===s.id}" onclick="verSolapa('${s.id}')">${ICO[s.i]}${s.t}</button>`).join("");
+  const fab = document.getElementById("fab");
+  fab.style.display = (estado.sesion.rol==="carga" && vista!=="resumen") ? "grid":"none";
+}
+function verSolapa(id){ vista=id; pintarBarra(); render(); window.scrollTo(0,0); }
+function nuevoAqui(){ vista==="deposito" ? abrirDeposito(null) : abrirColocado(null,null); }
+
+/* ══════════ RENDER ══════════ */
+const misDep = () => estado.deposito.filter(d=>d.tdId===estado.sesion.tdId);
+const misCol = () => estado.colocados.filter(c=>c.tdId===estado.sesion.tdId);
+const unidades = p => p.existencias.reduce((a,e)=>a+(+e.cant||0),0);
+function venceCerca(p){ if(!p.hasta) return false; return (new Date(p.hasta)-new Date())/86400000 < 45; }
+function buscar(lista, q, campos){ q=(q||"").trim().toLowerCase(); if(!q) return lista;
+  return lista.filter(o=>campos.map(c=>o[c]||"").join(" ").toLowerCase().includes(q)); }
+let textoBusqueda = "";
+function alBuscar(v){ textoBusqueda=v; render(true); }
+
+function render(soloLista){
+  const c = document.getElementById("contenido");
+  if(vista==="resumen"){ c.innerHTML = vistaResumen(); return; }
+  if(!soloLista) textoBusqueda="";
+  const esDep = vista==="deposito";
+  const buscadorHTML = `<input class="buscador" id="busca" placeholder="${esDep?"Buscar modelo o ubicación":"Buscar comercio, localidad o titular"}"
+      value="${esc(textoBusqueda)}" oninput="alBuscar(this.value)">`;
+  let cuerpo="";
+  if(esDep) cuerpo = listaDeposito();
+  else if(vista==="colocados") cuerpo = listaColocados(misCol());
+  else if(vista==="pendientes") cuerpo = listaControl("pendiente");
+  else if(vista==="resueltos") cuerpo = listaControl("resueltos");
+  c.innerHTML = buscadorHTML + cuerpo;
+  const b = document.getElementById("busca");
+  if(b && soloLista){ b.focus(); b.setSelectionRange(b.value.length,b.value.length); }
+}
+
+function listaDeposito(){
+  const dep = misDep(), lista = buscar(dep, textoBusqueda, ["modelo","terminacion","ubicacion","condicion"]);
+  const total = dep.reduce((a,d)=>a+(+d.cantidad||0),0);
+  const cab = `<div class="numeritos">
+    <div class="numerito" style="--c:var(--turquesa)"><b>${total}</b><span>Muebles</span></div>
+    <div class="numerito" style="--c:var(--violeta)"><b>${dep.length}</b><span>Modelos</span></div>
+    <div class="numerito" style="--c:var(--verde)"><b>${dep.filter(d=>d.condicion==="Nuevo").reduce((a,d)=>a+(+d.cantidad||0),0)}</b><span>Nuevos</span></div>
+  </div>`;
+  if(!lista.length) return cab + `<div class="nada"><span class="emo">📦</span>
+    <p>${dep.length?"Ningún modelo coincide con la búsqueda.":"Todavía no hay muebles en depósito."}</p>
+    <button class="btn chica" onclick="abrirDeposito(null)">Cargar ingreso</button></div>`;
+  return cab + `<div class="tarjetas">` + lista.map(d=>`
+    <div class="tarjeta" onclick="abrirDeposito('${d.id}')">
+      <span class="tarjeta-ico" style="--c:var(--turquesa)">${ICO.caja}</span>
+      <div class="tarjeta-cuerpo">
+        <h4>${esc(d.modelo)}</h4>
+        <p class="sub">${esc(d.terminacion)} · ${d.escalones} escalones${d.ubicacion?" · "+esc(d.ubicacion):""}</p>
+        <div class="etiquetas">
+          <span class="etiqueta ${d.condicion==="Nuevo"?"agua":d.condicion==="Para baja"?"alerta":""}">${esc(d.condicion)}</span>
+          ${d.fotos.length?`<span class="etiqueta">${d.fotos.length} foto${d.fotos.length===1?"":"s"}</span>`:`<span class="etiqueta alerta">Sin foto</span>`}
+          <span class="etiqueta">${esc(d.por)} · ${esc(d.fecha)}</span>
+        </div>
+      </div>
+      <span class="estampa cant">${d.cantidad}</span>
+    </div>`).join("") + `</div>`;
+}
+
+function tarjetaColocado(c, alRevisar){
+  return `<div class="tarjeta" onclick="${alRevisar?`abrirRevision('${c.id}')`:`abrirColocado('${c.id}',null)`}">
+    <span class="tarjeta-ico" style="--c:var(--naranja)">${ICO.local}</span>
+    <div class="tarjeta-cuerpo">
+      <h4>${esc(c.nombre)}</h4>
+      <p class="sub">${esc(c.direccion)}${c.localidad?" · "+esc(c.localidad):""}</p>
+      <div class="etiquetas">
+        <span class="etiqueta uva">${esc(c.mueble)}</span>
+        <span class="etiqueta">${c.cantComodato} en comodato</span>
+        ${c.exhibicion?`<span class="etiqueta agua">${c.exhibicion}% exhibición</span>`:""}
+        ${c.canonFijo?`<span class="etiqueta sol">Fijo ${plata(c.canonFijo)}</span>`:""}
+        ${c.canonVariable?`<span class="etiqueta sol">Var. ${c.canonVariable}%</span>`:""}
+        ${c.comodatoFotos.length?"":`<span class="etiqueta alerta">Falta foto del comodato</span>`}
+        ${venceCerca(c)?`<span class="etiqueta alerta">Comodato por vencer</span>`:""}
+        ${alRevisar&&c.revision.args.length?`<span class="etiqueta alerta">${c.revision.args.length} observaciones</span>`:""}
+        ${c.revision.estado!=="pendiente" ? (c.revision.enviado
+          ? `<span class="etiqueta verde">Avisado al JV</span>`
+          : `<span class="etiqueta alerta">Falta avisar al JV</span>`) : ""}
+      </div>
+    </div>
+    <span class="estampa ${c.revision.estado}">${c.revision.estado==="ok"?"OK":c.revision.estado==="obs"?"Observado":"Pendiente"}</span>
+  </div>`;
+}
+function listaColocados(base){
+  const lista = buscar(base, textoBusqueda, ["nombre","direccion","localidad","titular"]);
+  const cab = `<div class="numeritos">
+    <div class="numerito" style="--c:var(--naranja)"><b>${base.length}</b><span>Colocados</span></div>
+    <div class="numerito" style="--c:var(--verde)"><b>${base.filter(c=>c.comodatoFotos.length).length}</b><span>Con comodato</span></div>
+    <div class="numerito" style="--c:var(--frambuesa)"><b>${base.reduce((a,c)=>a+(+c.cantComodato||0),0)}</b><span>En comodato</span></div>
+  </div>`;
+  if(!lista.length) return cab + `<div class="nada"><span class="emo">🏪</span>
+    <p>${base.length?"Ningún punto coincide con la búsqueda.":"Todavía no hay muebles colocados."}</p>
+    <button class="btn chica" onclick="abrirColocado(null,null)">Cargar el primero</button></div>`;
+  return cab + `<div class="tarjetas">` + lista.map(c=>tarjetaColocado(c,false)).join("") + `</div>`;
+}
+function listaControl(modo){
+  const t = misCol();
+  let base = modo==="pendiente" ? t.filter(c=>c.revision.estado==="pendiente")
+                                : t.filter(c=>c.revision.estado!=="pendiente");
+  if(modo!=="pendiente" && filtro!=="todos") base = base.filter(c=>c.revision.estado===filtro);
+  const lista = buscar(base, textoBusqueda, ["nombre","direccion","localidad","titular"]);
+  const cab = `<div class="numeritos">
+      <div class="numerito" style="--c:var(--amarillo)"><b>${t.filter(c=>c.revision.estado==="pendiente").length}</b><span>Pendientes</span></div>
+      <div class="numerito" style="--c:var(--verde)"><b>${t.filter(c=>c.revision.estado==="ok").length}</b><span>Con OK</span></div>
+      <div class="numerito" style="--c:var(--rojo)"><b>${t.filter(c=>c.revision.estado==="obs").length}</b><span>Observados</span></div>
+    </div>` + (modo==="pendiente"?"":`<div class="filtritos">
+      ${[["todos","Todos"],["ok","Con OK"],["obs","Observados"]].map(([v,l])=>
+        `<button class="filtrito" aria-pressed="${filtro===v}" onclick="filtro='${v}';render()">${l}</button>`).join("")}
+    </div>`);
+  if(!lista.length) return cab + `<div class="nada"><span class="emo">${modo==="pendiente"?"🎉":"🔍"}</span>
+    <p>${modo==="pendiente"?"No queda nada pendiente por revisar.":"Todavía no hay muebles resueltos con este filtro."}</p></div>`;
+  return cab + `<div class="tarjetas">` + lista.map(c=>tarjetaColocado(c,true)).join("") + `</div>`;
+}
+
+function vistaResumen(){
+  const td = estado.tds.find(t=>t.id===estado.sesion.tdId);
+  const dep = misDep(), col = misCol();
+  const canon = col.reduce((a,c)=>a+(+c.canonFijo||0),0);
+  const exhibs = col.filter(c=>c.exhibicion).map(c=>+c.exhibicion);
+  const prom = exhibs.length ? Math.round(exhibs.reduce((a,b)=>a+b,0)/exhibs.length) : 0;
+  return `<h2 class="titulazo">Resumen</h2>
+    <p class="bajada">${esc(td.nombre)}${td.zona?" · "+esc(td.zona):""}</p>
+    <div class="numeritos">
+      <div class="numerito" style="--c:var(--turquesa)"><b>${dep.reduce((a,d)=>a+(+d.cantidad||0),0)}</b><span>En depósito</span></div>
+      <div class="numerito" style="--c:var(--naranja)"><b>${col.length}</b><span>Colocados</span></div>
+      <div class="numerito" style="--c:var(--verde)"><b>${col.filter(c=>c.revision.estado==="ok").length}</b><span>Con OK</span></div>
+      <div class="numerito" style="--c:var(--rojo)"><b>${col.filter(c=>c.revision.estado==="obs").length}</b><span>Observados</span></div>
+    </div>
+    <div class="bloque"><h5>Acuerdos</h5>
+      <div class="resumen-linea"><span>Muebles dejados en comodato</span><b>${col.reduce((a,c)=>a+(+c.cantComodato||0),0)}</b></div>
+      <div class="resumen-linea"><span>Sin foto del comodato</span><b>${col.filter(c=>!c.comodatoFotos.length).length}</b></div>
+      <div class="resumen-linea"><span>Comodatos por vencer</span><b>${col.filter(venceCerca).length}</b></div>
+      <div class="resumen-linea"><span>Exhibición promedio</span><b>${prom}%</b></div>
+      <div class="resumen-linea"><span>Canon fijo mensual</span><b>${plata(canon)||"$ 0"}</b></div>
+    </div>
+    <div class="bloque"><h5>Avisos al Jefe de Ventas</h5>
+      ${jefesConTel(td.id).length ? td.jefes.filter(j=>j.tel).map(j=>
+          `<div class="resumen-linea"><span>${esc(j.nombre)}</span><b>${esc(j.tel)}</b></div>`).join("")
+        : `<div class="cartel alerta">Falta cargar el WhatsApp del Jefe de Ventas: sin eso los controles no se pueden avisar.</div>`}
+      <div class="resumen-linea"><span>Controles sin avisar</span><b>${col.filter(c=>c.revision.estado!=="pendiente" && !c.revision.enviado).length}</b></div>
+      <button class="btn ancho suave" style="margin-top:14px" onclick="hojaPerfil('${td.id}')">Editar perfil del TD</button>
+    </div>
+    <div class="bloque"><h5>Descargas</h5>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn chica suave" onclick="exportar('deposito')">CSV de depósito</button>
+        <button class="btn chica suave" onclick="exportar('colocados')">CSV de colocados</button>
+      </div></div>
+    <div class="bloque"><h5>Sesión</h5>
+      <div class="resumen-linea"><span>Entraste como</span><b>${esc(estado.sesion.usuario)}</b></div>
+      <div class="resumen-linea"><span>Rol</span><b>${estado.sesion.rol==="carga"?"Carga de stock":"Control de mueble"}</b></div>
+      <button class="btn ancho suave" style="margin-top:14px" onclick="salir()">Cambiar de TD</button>
+    </div>`;
+}
+
+/* ══════════ DEPÓSITO ══════════ */
+const MODELOS = ["Cascada de mostrador","Cascada de pie","Cascada doble faz","Cascada de caja","Mueble esquinero","Isla de temporada"];
+const TERMINACIONES = ["Madera natural","Laqueada","Melamina","MDF pintado","Guatambú barnizado"];
+const CONDICIONES = ["Nuevo","Usado en buen estado","A reparar","Para baja"];
+const opciones = (arr,sel) => arr.map(o=>`<option ${o===sel?"selected":""}>${o}</option>`).join("");
+
+function abrirDeposito(id){
+  borrador = id ? JSON.parse(JSON.stringify(estado.deposito.find(d=>d.id===id)))
+    : {id:"d"+Date.now(), tdId:estado.sesion.tdId, modelo:MODELOS[0], escalones:4, terminacion:TERMINACIONES[0],
+       medidas:"", cantidad:1, condicion:"Nuevo", ubicacion:"", obs:"", fotos:[],
+       por:estado.sesion.usuario, fecha:hoy()};
+  const nuevo = !id;
+  objetivos = {deposito:borrador.fotos};
+  abrirHoja(`
+    <div class="hoja-cab"><h3>${nuevo?"Ingreso a depósito":esc(borrador.modelo)}</h3>
+      <button class="equis" onclick="cerrarHoja()">✕</button></div>
+    <div class="bloque"><h5>El mueble</h5>
+      <div class="dupla">
+        <div class="campo"><label>Modelo</label><select id="d_modelo">${opciones(MODELOS,borrador.modelo)}</select></div>
+        <div class="campo"><label>Escalones</label><input id="d_escalones" type="number" min="1" max="10" value="${borrador.escalones}"></div>
+      </div>
+      <div class="dupla">
+        <div class="campo"><label>Terminación</label><select id="d_terminacion">${opciones(TERMINACIONES,borrador.terminacion)}</select></div>
+        <div class="campo"><label>Medidas</label><input id="d_medidas" value="${esc(borrador.medidas)}" placeholder="80 × 45 × 35 cm"></div>
+      </div>
+      <div class="tripla">
+        <div class="campo"><label>Cantidad</label><input id="d_cantidad" type="number" min="0" value="${borrador.cantidad}"></div>
+        <div class="campo"><label>Condición</label><select id="d_condicion">${opciones(CONDICIONES,borrador.condicion)}</select></div>
+        <div class="campo"><label>Ubicación</label><input id="d_ubicacion" value="${esc(borrador.ubicacion)}" placeholder="Estante B3"></div>
+      </div>
+      <div class="campo" style="margin:0"><label>Observaciones</label>
+        <textarea id="d_obs" placeholder="Vienen sin cenefa, faltan tornillos en dos unidades.">${esc(borrador.obs)}</textarea></div>
+    </div>
+    <div class="bloque"><h5>Fotos del mueble</h5><div class="fotos" id="fotos_deposito"></div></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      ${nuevo?"":`<button class="btn chica suave" onclick="borrarDeposito('${borrador.id}')">Eliminar</button>
+                  <button class="btn chica suave" onclick="colocarDesde('${borrador.id}')">Colocar en un PDV</button>`}
+      <button class="btn ancho" onclick="guardarDeposito()">${nuevo?"Guardar ingreso":"Guardar cambios"}</button>
+    </div>`);
+  pintarFotos("deposito");
+}
+function guardarDeposito(){
+  const v = id => document.getElementById(id).value;
+  Object.assign(borrador,{modelo:v("d_modelo"), escalones:+v("d_escalones")||1, terminacion:v("d_terminacion"),
+    medidas:v("d_medidas").trim(), cantidad:+v("d_cantidad")||0, condicion:v("d_condicion"),
+    ubicacion:v("d_ubicacion").trim(), obs:v("d_obs").trim(), por:estado.sesion.usuario, fecha:hoy()});
+  if(!borrador.fotos.length && !confirm("No cargaste ninguna foto del mueble. ¿Guardar igual?")) return;
+  const i = estado.deposito.findIndex(d=>d.id===borrador.id);
+  if(i>=0) estado.deposito[i]=borrador; else estado.deposito.push(borrador);
+  sincronizar("deposito",borrador); render(); cerrarHoja();
+}
+function borrarDeposito(id){
+  if(!confirm("Se elimina esta línea de depósito. ¿Seguir?")) return;
+  estado.deposito = estado.deposito.filter(d=>d.id!==id);
+  eliminarRemoto("deposito",id); render(); cerrarHoja();
+}
+function colocarDesde(id){ abrirColocado(null, estado.deposito.find(d=>d.id===id)); }
+
+/* ══════════ COLOCADOS ══════════ */
+const ACUERDOS = ["Exhibición exclusiva","Exhibición compartida","Espacio en línea de caja","Temporada de verano","Sin acuerdo formal"];
+const CANALES = ["Kiosco","Autoservicio","Supermercado","Estación de servicio","Almacén","Balneario","Chocolatería"];
+const ESTADOS = ["Instalado","A instalar","En reparación","A reemplazar","Retirado"];
+
+function abrirColocado(id, desde){
+  borrador = id ? JSON.parse(JSON.stringify(estado.colocados.find(c=>c.id===id)))
+    : {id:"c"+Date.now(), tdId:estado.sesion.tdId, origen: desde?desde.id:"",
+       nombre:"", direccion:"", localidad:"", canal:CANALES[0],
+       mueble: desde?desde.modelo:MODELOS[0], escalones: desde?desde.escalones:4,
+       terminacion: desde?desde.terminacion:TERMINACIONES[0], nroInterno:"", estado:ESTADOS[0],
+       comodato:"", titular:"", fechaFirma:"", cantComodato:1, hasta:"", comodatoFotos:[],
+       acuerdo:ACUERDOS[0], exhibicion:"", canonFijo:"", canonVariable:"", baseVariable:"", detalleAcuerdo:"",
+       existencias:[{sku:"",esc:"",cant:""}], fotos:[],
+       revision:{estado:"pendiente",args:[],comentario:"",fotos:[],fecha:"",por:"",enviado:false},
+       por:estado.sesion.usuario, fecha:hoy()};
+  const nuevo = !id;
+  objetivos = {mueble:borrador.fotos, comodato:borrador.comodatoFotos};
+  abrirHoja(`
+    <div class="hoja-cab"><h3>${nuevo?"Mueble colocado":esc(borrador.nombre)}</h3>
+      <button class="equis" onclick="cerrarHoja()">✕</button></div>
+    ${desde?`<div class="cartel uva">Sale de depósito: ${esc(desde.modelo)}. Al guardar se descuenta una unidad.</div>`:""}
+
+    <div class="bloque"><h5>Punto de venta</h5>
+      <div class="campo"><label>Comercio</label><input id="c_nombre" value="${esc(borrador.nombre)}" placeholder="Kiosco La Perla"></div>
+      <div class="campo"><label>Dirección</label><input id="c_direccion" value="${esc(borrador.direccion)}" placeholder="Av. Costanera 1240"></div>
+      <div class="dupla">
+        <div class="campo" style="margin:0"><label>Localidad</label><input id="c_localidad" value="${esc(borrador.localidad)}" placeholder="Villa Gesell"></div>
+        <div class="campo" style="margin:0"><label>Canal</label><select id="c_canal">${opciones(CANALES,borrador.canal)}</select></div>
+      </div>
+    </div>
+
+    <div class="bloque"><h5>La cascada</h5>
+      <div class="dupla">
+        <div class="campo"><label>Modelo</label><select id="c_mueble">${opciones(MODELOS,borrador.mueble)}</select></div>
+        <div class="campo"><label>Escalones</label><input id="c_escalones" type="number" min="1" max="10" value="${borrador.escalones}"></div>
+      </div>
+      <div class="tripla">
+        <div class="campo"><label>Terminación</label><select id="c_terminacion">${opciones(TERMINACIONES,borrador.terminacion)}</select></div>
+        <div class="campo"><label>Nº mueble</label><input id="c_nroInterno" value="${esc(borrador.nroInterno)}" placeholder="CAS-0000"></div>
+        <div class="campo"><label>Estado</label><select id="c_estado">${opciones(ESTADOS,borrador.estado)}</select></div>
+      </div>
+      <label style="display:block;font-size:12.5px;font-weight:800;color:var(--tinta-2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Fotos del mueble colocado</label>
+      <div class="fotos" id="fotos_mueble"></div>
+    </div>
+
+    <div class="bloque"><h5>Comodato</h5>
+      <div class="fotos" id="fotos_comodato"></div>
+      <p class="pista" style="margin-bottom:14px">Foto del comodato firmado. Sin ella el mueble queda marcado en la lista.</p>
+      <div class="dupla">
+        <div class="campo"><label>Nº de comodato</label><input id="c_comodato" value="${esc(borrador.comodato)}" placeholder="CM-00000"></div>
+        <div class="campo"><label>Titular</label><input id="c_titular" value="${esc(borrador.titular)}" placeholder="Nombre del titular"></div>
+      </div>
+      <div class="tripla">
+        <div class="campo" style="margin:0"><label>Fecha de firma</label><input id="c_fechaFirma" type="date" value="${borrador.fechaFirma}"></div>
+        <div class="campo" style="margin:0"><label>Muebles dejados</label><input id="c_cantComodato" type="number" min="1" value="${borrador.cantComodato}"></div>
+        <div class="campo" style="margin:0"><label>Vence</label><input id="c_hasta" type="date" value="${borrador.hasta}"></div>
+      </div>
+    </div>
+
+    <div class="bloque"><h5>Acuerdo</h5>
+      <div class="campo"><label>Tipo de acuerdo</label><select id="c_acuerdo">${opciones(ACUERDOS,borrador.acuerdo)}</select></div>
+      <div class="tripla">
+        <div class="campo"><label>% exhibición</label><input id="c_exhibicion" type="number" min="0" max="100" value="${borrador.exhibicion}" placeholder="80"></div>
+        <div class="campo"><label>Canon fijo ($)</label><input id="c_canonFijo" type="number" min="0" value="${borrador.canonFijo}" placeholder="0"></div>
+        <div class="campo"><label>Variable (%)</label><input id="c_canonVariable" type="number" min="0" step="0.1" value="${borrador.canonVariable}" placeholder="0"></div>
+      </div>
+      <div class="campo"><label>El variable se calcula sobre</label>
+        <input id="c_baseVariable" value="${esc(borrador.baseVariable)}" placeholder="Venta mensual de chocolates del PDV"></div>
+      <div class="campo" style="margin:0"><label>Detalle</label>
+        <textarea id="c_detalleAcuerdo" placeholder="Exhibición exclusiva en los 4 escalones, reposición semanal, cenefa de temporada.">${esc(borrador.detalleAcuerdo)}</textarea></div>
+    </div>
+
+    <div class="bloque"><h5>Qué exhibe</h5>
+      <div class="rotulos"><span>Producto</span><span>Escalón</span><span>Unid.</span><span></span></div>
+      <div id="skus"></div>
+      <button class="btn chica suave" onclick="agregarSKU()">+ Agregar producto</button>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      ${nuevo?"":`<button class="btn chica suave" onclick="borrarColocado('${borrador.id}')">Eliminar</button>`}
+      <button class="btn ancho" onclick="guardarColocado()">${nuevo?"Guardar colocado":"Guardar cambios"}</button>
+    </div>`);
+  pintarSKUs(); pintarFotos("mueble"); pintarFotos("comodato");
+}
+function pintarSKUs(){
+  document.getElementById("skus").innerHTML = borrador.existencias.map((e,i)=>`
+    <div class="fila-sku">
+      <input value="${esc(e.sku)}" placeholder="Producto" oninput="borrador.existencias[${i}].sku=this.value">
+      <input type="number" min="1" value="${e.esc}" placeholder="—" oninput="borrador.existencias[${i}].esc=this.value">
+      <input type="number" min="0" value="${e.cant}" placeholder="0" oninput="borrador.existencias[${i}].cant=this.value">
+      <button class="quitar" onclick="borrador.existencias.splice(${i},1);pintarSKUs()" aria-label="Quitar">✕</button>
+    </div>`).join("");
+}
+function agregarSKU(){ borrador.existencias.push({sku:"",esc:"",cant:""}); pintarSKUs(); }
+function guardarColocado(){
+  const v = id => document.getElementById(id).value;
+  Object.assign(borrador,{
+    nombre:v("c_nombre").trim(), direccion:v("c_direccion").trim(), localidad:v("c_localidad").trim(),
+    canal:v("c_canal"), mueble:v("c_mueble"), escalones:+v("c_escalones")||1, terminacion:v("c_terminacion"),
+    nroInterno:v("c_nroInterno").trim(), estado:v("c_estado"),
+    comodato:v("c_comodato").trim(), titular:v("c_titular").trim(), fechaFirma:v("c_fechaFirma"),
+    cantComodato:+v("c_cantComodato")||1, hasta:v("c_hasta"), acuerdo:v("c_acuerdo"),
+    exhibicion:v("c_exhibicion"), canonFijo:v("c_canonFijo"), canonVariable:v("c_canonVariable"),
+    baseVariable:v("c_baseVariable").trim(), detalleAcuerdo:v("c_detalleAcuerdo").trim(),
+    por:estado.sesion.usuario, fecha:hoy()});
+  if(!borrador.nombre){ alert("Falta el nombre del comercio."); return; }
+  if(!borrador.comodatoFotos.length && !confirm("Falta la foto del comodato. ¿Guardar igual y completarla después?")) return;
+  borrador.existencias = borrador.existencias.filter(e=>e.sku.trim());
+  const i = estado.colocados.findIndex(c=>c.id===borrador.id);
+  if(i>=0) estado.colocados[i]=borrador;
+  else{
+    estado.colocados.push(borrador);
+    const d = estado.deposito.find(x=>x.id===borrador.origen);
+    if(d){ d.cantidad = Math.max(0,(+d.cantidad||0)-1); sincronizar("deposito",d); }
+  }
+  sincronizar("colocados",borrador); render(); cerrarHoja();
+}
+function borrarColocado(id){
+  if(!confirm("Se elimina el mueble colocado y su revisión. ¿Seguir?")) return;
+  estado.colocados = estado.colocados.filter(c=>c.id!==id);
+  eliminarRemoto("colocados",id); render(); cerrarHoja();
+}
+
+/* ══════════ FOTOS ══════════ */
+const srcFoto  = f => typeof f==="string" ? f : (f.thumb||f.ver||"");
+const linkFoto = f => typeof f==="string" ? "" : (f.ver||"");
+let subiendo = 0;
+
+function pintarFotos(d){
+  const arr = objetivos[d], cont = document.getElementById("fotos_"+d);
+  if(!cont) return;
+  const pide = d==="comodato" && !arr.length ? " pide":"";
+  cont.innerHTML = arr.map((f,i)=>`<div class="foto"><img src="${srcFoto(f)}" alt="Foto ${i+1}" loading="lazy">
+      <button onclick="quitarFoto('${d}',${i})" aria-label="Quitar">✕</button></div>`).join("") +
+    (subiendo?`<div class="foto subiendo"><span class="giro"></span></div>`:"") +
+    `<button class="subir${pide}" onclick="document.getElementById('in_${d}').click()">
+       ${d==="comodato"?ICO.papel:ICO.camara}${d==="comodato"?"Comodato":"Foto"}</button>
+     <input type="file" id="in_${d}" accept="image/*" capture="environment" multiple hidden onchange="sumarFotos(this,'${d}')">`;
+}
+function quitarFoto(d,i){ objetivos[d].splice(i,1); pintarFotos(d); }
+
+function achicar(file, max){
+  return new Promise((resolve,reject)=>{
+    const fr = new FileReader();
+    fr.onerror = reject;
+    fr.onload = e=>{
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = ()=>{
+        const k = Math.min(1, max/Math.max(img.width,img.height));
+        const cv = document.createElement("canvas");
+        cv.width = Math.round(img.width*k); cv.height = Math.round(img.height*k);
+        cv.getContext("2d").drawImage(img,0,0,cv.width,cv.height);
+        resolve(cv.toDataURL("image/jpeg", max>1000?.75:.62));
+      };
+      img.src = e.target.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+async function sumarFotos(input, d){
+  const archivos = [...input.files]; input.value="";
+  if(!archivos.length) return;
+  const td = estado.tds.find(t=>t.id===estado.sesion.tdId);
+  const carpeta = d==="deposito" ? "Depósito"
+    : ((borrador&&borrador.nombre) || (revision&&revision.comercio) || "Sin comercio");
+  const rotulo = {deposito:"mueble", mueble:"colocado", comodato:"comodato", revision:"control"}[d]||d;
+  for(const file of archivos){
+    subiendo++; pintarFotos(d);
+    try{
+      const dataURL = await achicar(file, d==="comodato"?1600:1000);
+      if(API){
+        const r = await api({accion:"foto", td:td.nombre, carpeta,
+          nombre: rotulo+"-"+Date.now()+".jpg", data: dataURL.split(",")[1]});
+        objetivos[d].push(r.foto);
+        marcarLinea(true);
+      }else{
+        objetivos[d].push(dataURL);   // sin servidor configurado: queda en el teléfono
+      }
+    }catch(e){
+      marcarLinea(false);
+      alert("No se pudo subir la foto a Drive. Revisá la señal y probá de nuevo.");
+    }finally{ subiendo--; pintarFotos(d); }
+  }
+}
+
+/* ══════════ CONTROL ══════════ */
+const MOTIVOS = {
+  "Madera y estructura":[
+    "Madera hinchada o manchada por humedad y salitre",
+    "Escalón flojo, vencido o caído",
+    "Astillada, rajada o con golpes",
+    "Barniz o laca saltados",
+    "Pata despareja: el mueble se tambalea",
+    "Tornillos flojos, faltantes o a la vista",
+    "Frontal, cenefa o logo despegado",
+    "Hongos o moho en la madera"],
+  "Ubicación y exhibición":[
+    "Fuera del sector de golosinas o de la línea de caja",
+    "Al sol directo o cerca de una fuente de calor",
+    "Tapada por otra mercadería o material de competencia",
+    "Corrida de lugar sin aviso",
+    "Contra la pared: el cliente no llega al producto",
+    "Sin cartelería ni cenefa de campaña",
+    "Cenefa vencida o de otra temporada",
+    "La cascada no está en el punto de venta"],
+  "Producto y surtido":[
+    "Escalones vacíos o a menos de la mitad",
+    "Faltan SKU obligatorios del acuerdo",
+    "Chocolate blanqueado o deformado por calor",
+    "Producto vencido o próximo a vencer",
+    "Producto de la competencia dentro del mueble",
+    "Exhibición desordenada: no respeta el planograma",
+    "Existencias no coinciden con lo cargado"],
+  "Comodato y acuerdo":[
+    "No se cumple el % de exhibición acordado",
+    "Comodato vencido o sin renovar",
+    "Comodato sin firma del titular",
+    "Cambió el titular del comercio",
+    "Hay menos muebles de los que figuran en el comodato",
+    "Sin cartel de precio a la vista",
+    "Precio por encima del sugerido",
+    "Canon impago o en discusión",
+    "El comercio pide retirar el mueble"]
+};
+function abrirRevision(id){
+  const p = estado.colocados.find(x=>x.id===id);
+  revision = JSON.parse(JSON.stringify(p.revision));
+  revision.comercio = p.nombre;
+  objetivos = {revision:revision.fotos};
+  const galeria = arr => `<div class="fotos">${arr.map(f=>`<a class="foto" href="${linkFoto(f)||srcFoto(f)}" target="_blank" rel="noopener"><img src="${srcFoto(f)}" alt="" loading="lazy"></a>`).join("")}</div>`;
+  abrirHoja(`
+    <div class="hoja-cab"><h3>${esc(p.nombre)}</h3><button class="equis" onclick="cerrarHoja()">✕</button></div>
+    ${p.revision.estado!=="pendiente"?`<div class="cartel uva">Revisada por ${esc(p.revision.por)} el ${esc(p.revision.fecha)}. Si la resolvés de nuevo, se reemplaza.</div>
+      <button class="btn wasap ancho" style="margin-bottom:12px" onclick="pantallaEnvio('${p.id}')">
+        ${p.revision.enviado?"📲 Reenviar al Jefe de Ventas":"📲 Avisar al Jefe de Ventas"}</button>`:""}
+    <div class="bloque"><h5>La ficha</h5>
+      <div class="resumen-linea"><span>Mueble</span><b>${esc(p.mueble)} · ${p.escalones} esc.</b></div>
+      <div class="resumen-linea"><span>Dirección</span><b>${esc(p.direccion)}${p.localidad?", "+esc(p.localidad):""}</b></div>
+      <div class="resumen-linea"><span>Titular</span><b>${p.titular?esc(p.titular):"—"}${p.fechaFirma?" · "+esc(p.fechaFirma):""}</b></div>
+      <div class="resumen-linea"><span>Comodato</span><b>${p.comodato?esc(p.comodato):"s/n"} · ${p.cantComodato} mueble${p.cantComodato===1?"":"s"}${p.hasta?" · vence "+esc(p.hasta):""}</b></div>
+      <div class="resumen-linea"><span>Acuerdo</span><b>${esc(p.acuerdo)}${p.exhibicion?" · "+p.exhibicion+"%":""}</b></div>
+      <div class="resumen-linea"><span>Canon</span><b>${p.canonFijo?plata(p.canonFijo):"sin fijo"}${p.canonVariable?" + "+p.canonVariable+"%":""}</b></div>
+      <div class="resumen-linea"><span>Cargó</span><b>${esc(p.por)} · ${esc(p.fecha)}</b></div>
+    </div>
+    ${p.comodatoFotos.length?`<div class="bloque"><h5>Comodato firmado</h5>${galeria(p.comodatoFotos)}</div>`
+      :`<div class="cartel alerta">No hay foto del comodato cargada.</div>`}
+    ${p.fotos.length?`<div class="bloque"><h5>Fotos de la colocación</h5>${galeria(p.fotos)}</div>`:""}
+    <div class="bloque"><h5>Fotos del control</h5>
+      <p class="pista" style="margin:-6px 0 12px">Sacá las fotos ahora: van adjuntas al mensaje del Jefe de Ventas, esté OK o haya que arreglarlo.</p>
+      <div class="fotos" id="fotos_revision"></div></div>
+    <div class="bloque"><h5>¿Cómo está?</h5>
+      <div class="veredicto">
+        <button class="btn verde" onclick="darOK('${p.id}')">👍 OK</button>
+        <button class="btn rojo" onclick="const b=document.getElementById('obsBloque');b.style.display='block';b.scrollIntoView({behavior:'smooth'})">👎 Observar</button>
+      </div>
+    </div>
+    <div id="obsBloque" style="display:${p.revision.estado==="obs"?"block":"none"}">
+      <div class="bloque"><h5>Qué encontraste</h5>
+        <p class="pista" style="margin:-6px 0 12px">Marcá todo lo que corresponda.</p>
+        <div class="motivos">
+          ${Object.entries(MOTIVOS).map(([g,items])=>`<div class="grupo-motivos">${g}</div>
+            ${items.map(a=>`<label class="motivo"><input type="checkbox" value="${esc(a)}" ${revision.args.includes(a)?"checked":""}><span>${esc(a)}</span></label>`).join("")}`).join("")}
+        </div>
+        <div class="campo" style="margin:18px 0 0"><label>Detalle y acción pedida</label>
+          <textarea id="obs_com" placeholder="Qué viste, con quién hablaste y qué hay que hacer.">${esc(revision.comentario)}</textarea></div>
+      </div>
+      <button class="btn rojo ancho" onclick="darObservado('${p.id}')">Guardar y avisar al JV</button>
+    </div>`);
+  pintarFotos("revision");
+}
+function darOK(id){
+  const p = estado.colocados.find(x=>x.id===id);
+  p.revision = {estado:"ok",args:[],comentario:"",fotos:objetivos.revision||[],
+    fecha:hoy(),por:estado.sesion.usuario,enviado:false};
+  sincronizar("colocados",p); render(); pantallaEnvio(id);
+}
+function darObservado(id){
+  const args = [...document.querySelectorAll("#obsBloque .motivo input:checked")].map(i=>i.value);
+  const com = document.getElementById("obs_com").value.trim();
+  if(!args.length && !com){ alert("Marcá al menos un motivo o escribí el detalle."); return; }
+  const p = estado.colocados.find(x=>x.id===id);
+  p.revision = {estado:"obs",args,comentario:com,fotos:objetivos.revision||[],
+    fecha:hoy(),por:estado.sesion.usuario,enviado:false};
+  sincronizar("colocados",p); render(); pantallaEnvio(id);
+}
+
+/* ══════════ AVISO AL JEFE DE VENTAS ══════════ */
+function textoMensaje(p){
+  const td = estado.tds.find(t=>t.id===p.tdId), r = p.revision, L = [];
+  L.push(r.estado==="ok" ? "✅ CASCADA OK" : "⚠️ CASCADA OBSERVADA");
+  L.push("Carameleras y Acuerdos PDV · PBA Costa");
+  L.push("TD: "+td.nombre+(td.zona?" ("+td.zona+")":""));
+  L.push("");
+  L.push("🏪 "+p.nombre);
+  L.push(p.direccion+(p.localidad?", "+p.localidad:"")+" · "+p.canal);
+  L.push("🪵 "+p.mueble+" · "+p.escalones+" escalones"+(p.nroInterno?" · Nº "+p.nroInterno:""));
+  if(p.titular) L.push("👤 Titular: "+p.titular+(p.fechaFirma?" (firmó el "+p.fechaFirma+")":""));
+  L.push("📄 Comodato "+(p.comodato||"s/n")+" · "+p.cantComodato+" mueble"+(p.cantComodato===1?"":"s")+(p.hasta?" · vence "+p.hasta:""));
+  L.push("🤝 "+p.acuerdo+(p.exhibicion?" · "+p.exhibicion+"% de exhibición":""));
+  if(p.canonFijo||p.canonVariable)
+    L.push("💵 Canon: "+(p.canonFijo?plata(p.canonFijo)+" fijo":"sin fijo")+(p.canonVariable?" + "+p.canonVariable+"% variable"+(p.baseVariable?" sobre "+p.baseVariable:""):""));
+  L.push("");
+  if(r.estado==="obs"){
+    L.push("❌ HAY QUE ARREGLAR ("+r.args.length+"):");
+    r.args.forEach(a=>L.push("• "+a));
+    if(r.comentario){ L.push(""); L.push("📝 "+r.comentario); }
+  }else{
+    L.push("Sin observaciones: mueble, exhibición y comodato en orden.");
+  }
+  L.push("");
+  const links = r.fotos.map(linkFoto).filter(Boolean);
+  if(links.length){
+    L.push("📷 Fotos del control ("+links.length+"):");
+    links.forEach(u=>L.push(u));
+  }else if(r.fotos.length){
+    L.push("📷 "+r.fotos.length+" foto"+(r.fotos.length===1?"":"s")+" (quedaron en el teléfono, adjuntalas a mano)");
+  }else{
+    L.push("📷 Sin fotos");
+  }
+  const cl = (p.comodatoFotos||[]).map(linkFoto).filter(Boolean);
+  if(cl.length){ L.push(""); L.push("📄 Comodato firmado:"); cl.forEach(u=>L.push(u)); }
+  L.push("");
+  L.push("🕵️ Revisó "+r.por+" · "+r.fecha);
+  return L.join("\n");
+}
+const telLimpio = t => { let d=String(t||"").replace(/\D/g,""); if(!d) return ""; return d.startsWith("54")?d:"54"+d; };
+
+function pantallaEnvio(id){
+  const p = estado.colocados.find(x=>x.id===id);
+  const ok = p.revision.estado==="ok";
+  const jefes = jefesConTel(p.tdId);
+  abrirHoja(`
+    <div class="hoja-cab"><h3>${ok?"Quedó OK":"Observación guardada"}</h3>
+      <button class="equis" onclick="cerrarHoja()">✕</button></div>
+    <div class="bloque">
+      <div class="exito"><span class="emo">${ok?"🎉":"🔧"}</span>
+        <h3>${ok?"Todo en orden":"Hay que arreglarlo"}</h3>
+        <p>Avisale al Jefe de Ventas${p.revision.fotos.length?" con las "+p.revision.fotos.length+" fotos":""}.</p></div>
+    </div>
+    <div class="bloque"><h5>Mensaje</h5>
+      <textarea class="mensaje" id="msg">${esc(textoMensaje(p))}</textarea>
+      <p class="pista">Podés editarlo antes de mandarlo.</p>
+    </div>
+    <div class="bloque"><h5>Enviar</h5>
+      ${jefes.length ? jefes.map(j=>`<button class="btn wasap ancho" style="margin-bottom:10px"
+            onclick="abrirChat('${id}','${esc(j.tel)}')">💬 Mandar a ${esc(j.nombre)}</button>`).join("")
+        : `<div class="cartel alerta">Este TD no tiene cargado el WhatsApp del Jefe de Ventas.</div>
+           <button class="btn ancho suave" style="margin-bottom:10px" onclick="hojaPerfil('${p.tdId}')">Cargar el teléfono</button>`}
+      ${p.revision.fotos.some(linkFoto)?`<p class="pista" style="margin:2px 0 12px">Las fotos van como enlaces a Drive dentro del mensaje: el JV las abre con un toque, sin que se corten.</p>`:""}
+      <button class="btn ancho suave" onclick="copiarMensaje()">📋 Copiar el mensaje</button>
+    </div>
+    <button class="btn ancho" onclick="cerrarHoja()">Listo</button>`);
+}
+function marcarEnviado(id){
+  const p = estado.colocados.find(x=>x.id===id);
+  p.revision.enviado = true; p.revision.fechaEnvio = hoy();
+  sincronizar("colocados",p); render();
+}
+function abrirChat(id, tel){
+  const texto = document.getElementById("msg").value;
+  window.open("https://wa.me/"+telLimpio(tel)+"?text="+encodeURIComponent(texto), "_blank");
+  marcarEnviado(id);
+}
+async function compartirTodo(id){ abrirChat(id, (jefesConTel(estado.colocados.find(x=>x.id===id).tdId)[0]||{}).tel||""); }
+function copiarMensaje(){
+  const t = document.getElementById("msg");
+  navigator.clipboard ? navigator.clipboard.writeText(t.value).then(()=>alert("Mensaje copiado."))
+                      : (t.select(), document.execCommand("copy"), alert("Mensaje copiado."));
+}
+
+/* ══════════ EXPORTAR ══════════ */
+function exportar(cual){
+  const td = estado.tds.find(t=>t.id===estado.sesion.tdId);
+  const slug = td.nombre.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g,"-").toLowerCase();
+  let filas;
+  if(cual==="deposito"){
+    filas = [["TD","Modelo","Escalones","Terminación","Medidas","Cantidad","Condición","Ubicación","Observaciones","Fotos","Cargó","Fecha"]];
+    misDep().forEach(d=>filas.push([td.nombre,d.modelo,d.escalones,d.terminacion,d.medidas,d.cantidad,
+      d.condicion,d.ubicacion,d.obs,(d.fotos||[]).map(linkFoto).filter(Boolean).join(" ")||d.fotos.length,d.por,d.fecha]));
+  }else{
+    filas = [["TD","Zona","Comercio","Dirección","Localidad","Canal","Modelo","Escalones","Terminación","Nº mueble","Estado",
+      "Nº comodato","Titular","Fecha de firma","Muebles en comodato","Vence","Foto comodato","Acuerdo","% exhibición",
+      "Canon fijo","Canon variable %","Base variable","Detalle","Productos","Unidades","Fotos del control","Revisión","Motivos","Detalle revisión","Revisó","Fecha revisión","Avisado al JV","Cargó","Fecha carga"]];
+    misCol().forEach(c=>filas.push([td.nombre,td.zona,c.nombre,c.direccion,c.localidad,c.canal,c.mueble,c.escalones,
+      c.terminacion,c.nroInterno,c.estado,c.comodato,c.titular,c.fechaFirma,c.cantComodato,c.hasta,
+      (c.comodatoFotos||[]).map(linkFoto).filter(Boolean).join(" ")||(c.comodatoFotos.length?"En el teléfono":"No"),c.acuerdo,c.exhibicion,c.canonFijo,c.canonVariable,c.baseVariable,c.detalleAcuerdo,
+      c.existencias.map(e=>e.sku+(e.esc?" (esc. "+e.esc+")":"")+" ×"+(e.cant||0)).join(" | "),unidades(c),
+      (c.revision.fotos||[]).map(linkFoto).filter(Boolean).join(" "),
+      c.revision.estado==="ok"?"OK":c.revision.estado==="obs"?"Observada":"Pendiente",
+      c.revision.args.join(" | "),c.revision.comentario,c.revision.por,c.revision.fecha,
+      c.revision.estado==="pendiente"?"":(c.revision.enviado?"Sí · "+(c.revision.fechaEnvio||""):"No"),
+      c.por,c.fecha]));
+  }
+  const csv = "\uFEFF"+filas.map(f=>f.map(x=>`"${String(x??"").replace(/"/g,'""')}"`).join(";")).join("\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+  a.download = cual+"-"+slug+".csv"; a.click();
+}
+cargarDatos();
+</script>
