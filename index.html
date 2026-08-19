@@ -181,8 +181,13 @@ h1,h2,h3,h4{font-family:var(--display);font-weight:600;letter-spacing:-.01em;mar
 .hoja-cab{position:sticky;top:0;background:var(--papel);padding:16px 0 14px;display:flex;align-items:center;
   gap:12px;z-index:2}
 .hoja-cab h3{flex:1;font-size:21px;font-weight:600;line-height:1.15}
-.equis{background:#fff;border:0;width:40px;height:40px;border-radius:50%;cursor:pointer;flex:none;
-  color:var(--tinta);display:grid;place-items:center;box-shadow:var(--sombra);font-size:19px}
+.equis{background:#fff;border:0;height:40px;border-radius:99px;cursor:pointer;flex:none;padding:0 16px 0 12px;
+  color:var(--tinta);display:flex;align-items:center;gap:6px;box-shadow:var(--sombra);
+  font-size:15px;font-weight:800;font-family:var(--body)}
+.equis b{font-size:19px;font-weight:400;line-height:1}
+.volver{background:var(--papel);border:0;height:40px;border-radius:99px;cursor:pointer;color:var(--tinta);
+  display:flex;align-items:center;gap:6px;padding:0 14px 0 10px;flex:none;font-size:15px;font-weight:800}
+.volver b{font-size:19px;font-weight:400;line-height:1}
 .bloque{background:#fff;border-radius:22px;padding:16px;margin-bottom:12px;box-shadow:var(--sombra)}
 .bloque > h5{font-family:var(--display);font-size:12.5px;font-weight:600;text-transform:uppercase;
   letter-spacing:.1em;color:var(--frambuesa);margin-bottom:14px;display:flex;align-items:center;gap:8px}
@@ -259,7 +264,7 @@ h1,h2,h3,h4{font-family:var(--display);font-weight:600;letter-spacing:-.01em;mar
 <!-- TDs -->
 <section class="pantalla" id="tds">
   <div class="cabecera">
-    <button class="volver" onclick="ir('portada')" aria-label="Volver">←</button>
+    <button class="volver" onclick="ir('portada')"><b>←</b>Inicio</button>
     <div class="cabecera-txt"><b>Carameleras PBA Costa</b><span>Elegí tu distribuidor</span></div>
   </div>
   <div class="envoltura" style="padding-bottom:40px">
@@ -273,7 +278,7 @@ h1,h2,h3,h4{font-family:var(--display);font-weight:600;letter-spacing:-.01em;mar
 <!-- LOGIN -->
 <section class="pantalla" id="login">
   <div class="cabecera">
-    <button class="volver" onclick="ir('tds')" aria-label="Volver">←</button>
+    <button class="volver" onclick="ir('tds')"><b>←</b>TD</button>
     <div class="cabecera-txt"><b id="loginTD">TD</b><span id="loginZona"></span></div>
     <span class="punto" id="loginPunto"></span>
   </div>
@@ -305,7 +310,7 @@ h1,h2,h3,h4{font-family:var(--display);font-weight:600;letter-spacing:-.01em;mar
 <!-- APP -->
 <section class="pantalla" id="app">
   <div class="cabecera">
-    <button class="volver" onclick="salir()" aria-label="Volver">←</button>
+    <button class="volver" onclick="salir()"><b>←</b>Salir</button>
     <span class="punto" id="appPunto"></span>
     <div class="cabecera-txt"><b id="appTD">TD</b><span id="appUser"></span></div>
   </div>
@@ -471,7 +476,7 @@ function pintarTDs(){
 }
 function hojaPerfil(soloId){
   const lista = soloId ? estado.tds.filter(t=>t.id===soloId) : estado.tds;
-  abrirHoja(`<div class="hoja-cab"><button class="equis" onclick="atras()">←</button><h3>Jefes de Ventas</h3></div>
+  abrirHoja(`<div class="hoja-cab"><button class="equis" onclick="atras()"><b>←</b>Volver</button><h3>Jefes de Ventas</h3></div>
     <p class="bajada">A estos números llegan los controles por WhatsApp.</p>
     ${lista.map(t=>{ const i = estado.tds.indexOf(t);
       return `<div class="bloque"><h5 style="color:${COLORES[i]}">${esc(t.nombre)}</h5>
@@ -568,7 +573,7 @@ function vistaStock(){
 }
 function hojaAgregar(tipo){
   objetivos = {stock:[]};
-  abrirHoja(`<div class="hoja-cab"><button class="equis" onclick="atras()">←</button><h3>Sumar al stock</h3></div>
+  abrirHoja(`<div class="hoja-cab"><button class="equis" onclick="atras()"><b>←</b>Volver</button><h3>Sumar al stock</h3></div>
     <div class="cartel uva">${esc(tipo)} · hoy hay ${cuantos(tipo)} en el depósito</div>
     <div class="bloque"><h5>¿Cuántos llegaron?</h5>
       <div class="campo" style="margin:0"><label>Cantidad</label>
@@ -603,7 +608,7 @@ function moverStock(tipo, n){
 
 /* ═══════════ MUEBLES COLOCADOS ═══════════ */
 function elegirTipoParaColocar(){
-  abrirHoja(`<div class="hoja-cab"><button class="equis" onclick="atras()">←</button><h3>¿Qué mueble colocás?</h3></div>
+  abrirHoja(`<div class="hoja-cab"><button class="equis" onclick="atras()"><b>←</b>Volver</button><h3>¿Qué mueble colocás?</h3></div>
     <div class="stock">
       ${TIPOS.map(t=>`<button class="mueble" style="--c:${t.c};width:100%;text-align:left;border:0;cursor:pointer"
         onclick="abrirColocado(null,'${esc(t.n)}')">
@@ -673,9 +678,24 @@ function abrirColocado(id, tipo){
   objetivos = {mueble:borrador.fotos, comodato:borrador.comodatoFotos};
   const t = tipoInfo(borrador.tipo);
   abrirHoja(`
-    <div class="hoja-cab"><button class="equis" onclick="atras()">←</button>
+    <div class="hoja-cab"><button class="equis" onclick="atras()"><b>←</b>Volver</button>
       <h3>${nuevo?"Colocar mueble":esc(borrador.cliente)}</h3></div>
-    ${nuevo?`<div class="cartel uva">${esc(borrador.tipo)} · quedan ${cuantos(borrador.tipo)} en el stock del TD. Al guardar se descuenta uno.</div>`:""}
+    <div class="bloque"><h5>El bloque</h5>
+      <div class="mueble" style="--c:${t.c};box-shadow:none;padding:0 0 14px">
+        <span class="mueble-ico">${t.i}</span>
+        <span class="mueble-txt"><b>${esc(borrador.tipo)}</b><span>${cuantos(borrador.tipo)} en el stock del TD</span></span>
+      </div>
+      <div class="campo" style="margin:0"><label>¿Cuántos muebles van a este cliente?</label>
+        <input id="f_cantidad" type="number" min="1" value="${borrador.cantidad||1}" oninput="pintarBloque()"></div>
+      <div class="atajos">${[1,2,3,4,6,8].map(v=>`<button class="atajo" onclick="document.getElementById('f_cantidad').value=${v};pintarBloque()">${v}</button>`).join("")}</div>
+      <p class="pista" id="bloqueTxt"></p>
+      <div class="campo" style="margin:16px 0 0"><label>Medidas (alto × ancho × profundidad)</label>
+        <input id="f_medidas" value="${esc(borrador.medidas||"")}" placeholder="120 × 60 × 40 cm"></div>
+      <p class="pista">${borrador.tipo.indexOf("a medida")>0
+        ? "Mueble a medida: anotá las medidas reales, que después no se recuperan."
+        : "Sirve para saber qué entra en cada punto de venta."}</p>
+    </div>
+
 
     <div class="bloque"><h5>El cliente</h5>
       <div class="campo"><label>Nombre del cliente</label>
@@ -688,15 +708,6 @@ function abrirColocado(id, tipo){
         <div class="campo" style="margin:0"><label>Localidad</label>
           <input id="f_localidad" value="${esc(borrador.localidad)}" placeholder="Villa Gesell"></div>
       </div>
-    </div>
-
-    <div class="bloque"><h5>El mueble</h5>
-      <div class="dato-linea" style="padding-top:0"><span>Tipo</span><b>${esc(borrador.tipo)}</b></div>
-      <div class="campo" style="margin:14px 0 0"><label>Medidas (alto × ancho × profundidad)</label>
-        <input id="f_medidas" value="${esc(borrador.medidas||"")}" placeholder="120 × 60 × 40 cm"></div>
-      <p class="pista">${borrador.tipo.indexOf("a medida")>0
-        ? "Es un mueble a medida: anotá las medidas reales, que después no se recuperan."
-        : "Sirve para saber qué entra en cada punto de venta."}</p>
     </div>
 
     <div class="bloque"><h5>El acuerdo</h5>
@@ -721,7 +732,8 @@ function abrirColocado(id, tipo){
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       ${nuevo?"":`<button class="btn chica suave" onclick="borrarColocado('${borrador.id}')">Eliminar</button>`}
       <button class="btn ancho" onclick="guardarColocado(${nuevo})">${nuevo?"Colocar el mueble":"Guardar cambios"}</button>
-    </div>`);
+    </div>
+    <button class="btn ancho suave" style="margin-top:10px" onclick="atras()">← Volver sin guardar</button>`);
   pintarFotos("comodato"); pintarFotos("mueble"); pintarBloque();
 }
 function pintarBloque(){
@@ -774,7 +786,7 @@ function fichaControl(id){
   const t = tipoInfo(c.tipo);
   const galeria = arr => `<div class="fotos">${(arr||[]).map(f=>`<a class="foto" href="${linkFoto(f)||srcFoto(f)}" target="_blank" rel="noopener"><img src="${srcFoto(f)}" alt="" loading="lazy"></a>`).join("")}</div>`;
   abrirHoja(`
-    <div class="hoja-cab"><button class="equis" onclick="atras()">←</button><h3>${esc(c.cliente)}</h3></div>
+    <div class="hoja-cab"><button class="equis" onclick="atras()"><b>←</b>Volver</button><h3>${esc(c.cliente)}</h3></div>
     ${abierta(c)?`<div class="cartel alerta">Quedó una observación sin resolver del ${esc(ultimo(c).fecha)}.</div>`:""}
 
     <div class="bloque"><h5>El acuerdo</h5>
@@ -981,7 +993,7 @@ function pantallaEnvio(id){
   const c = estado.colocados.find(x=>x.id===id), u = ultimo(c), ok = u.veredicto==="ok";
   const jefes = jefesConTel(c.tdId);
   abrirHoja(`
-    <div class="hoja-cab"><button class="equis" onclick="atras()">←</button><h3>${ok?"Aprobado":"Observado"}</h3></div>
+    <div class="hoja-cab"><button class="equis" onclick="atras()"><b>←</b>Volver</button><h3>${ok?"Aprobado":"Observado"}</h3></div>
     <div class="bloque"><div class="exito"><span class="emo">${ok?"🎉":"🔧"}</span>
       <h3>${ok?"Todo en orden":"Hay que arreglarlo"}</h3>
       <p>Avisale al Jefe de Ventas${(u.fotos||[]).length?" con las "+u.fotos.length+" fotos":""}.</p></div></div>
@@ -1015,7 +1027,7 @@ function verLink(){
   const u = ultimo(c); if(!u) return;
   const td = estado.tds.find(t=>t.id===c.tdId);
   abrirHoja(`
-    <div class="hoja-cab"><button class="equis" onclick="cerrarLink()">←</button><h3>${esc(c.cliente)}</h3></div>
+    <div class="hoja-cab"><button class="equis" onclick="cerrarLink()"><b>←</b>Cerrar</button><h3>${esc(c.cliente)}</h3></div>
     <div class="cartel ${u.veredicto==="ok"?"verde":"alerta"}">
       ${u.veredicto==="ok"?"Aprobado":"Observado"} el ${esc(u.fecha)} · ${esc(td.nombre)} · revisó ${esc(u.por)}</div>
     <div class="bloque"><h5>Qué se encontró</h5>
@@ -1042,7 +1054,7 @@ function resolverLink(idc, idk){
   const c = estado.colocados.find(x=>x.id===idc), u = c.controles.find(k=>k.id===idk);
   u.estado="resuelta"; u.resolucion={por:n,fecha:hoy(),nota:""};
   sincronizar("colocados",c); if(estado.sesion) render();
-  abrirHoja(`<div class="hoja-cab"><button class="equis" onclick="cerrarLink()">←</button><h3>Listo</h3></div>
+  abrirHoja(`<div class="hoja-cab"><button class="equis" onclick="cerrarLink()"><b>←</b>Cerrar</button><h3>Listo</h3></div>
     <div class="bloque"><div class="exito"><span class="emo">✅</span><h3>Marcado como resuelto</h3>
       <p>El equipo lo ve al instante.</p></div></div>
     <button class="btn ancho" onclick="cerrarLink()">Cerrar</button>`);
