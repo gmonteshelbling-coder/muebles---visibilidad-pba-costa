@@ -168,6 +168,27 @@ h1,h2,h3,h4{font-family:var(--display);font-weight:600;letter-spacing:-.01em;mar
 .estampa.ok{background:#DFF7EF;color:#0B8C6A}
 .estampa.obs{background:#FFE9EB;color:#D62839}
 .estampa.gestion{background:#F0EBFF;color:#5B3FE0}
+.cuadricula{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.cuadro{border-radius:22px;padding:14px;min-height:158px;display:flex;flex-direction:column;
+  justify-content:space-between;cursor:pointer;box-shadow:var(--sombra);text-align:left;border:2px solid transparent}
+.cuadro:active{transform:scale(.97)}
+.cuadro.verde{background:#DFF7EF;border-color:#16C79A}
+.cuadro.rojo{background:#FFE9EB;border-color:#FF4757}
+.cuadro.blanco{background:#fff;border-color:#DCCFE6;border-style:dashed}
+.cuadro-alto{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.cuadro-luz{width:14px;height:14px;border-radius:50%;flex:none}
+.verde .cuadro-luz{background:#16C79A} .rojo .cuadro-luz{background:#FF4757}
+.blanco .cuadro-luz{background:#D9CBE4}
+.cuadro b{font-family:var(--display);font-weight:600;font-size:16px;line-height:1.2;display:block;
+  overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.cuadro .chico{font-size:12px;font-weight:700;color:var(--tinta-2);margin-top:4px;display:block}
+.cuadro .pie{font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;margin-top:10px}
+.verde .pie{color:#0B8C6A} .rojo .pie{color:#D62839} .blanco .pie{color:#8A7B9C}
+.leyenda{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px;font-size:12px;font-weight:700;color:var(--tinta-2)}
+.leyenda span{display:flex;align-items:center;gap:6px}
+.leyenda i{width:12px;height:12px;border-radius:50%;display:block}
+.paginas{display:flex;align-items:center;justify-content:center;gap:14px;margin:4px 0 10px}
+.paginas b{font-family:var(--display);font-weight:600;font-size:14px;color:var(--tinta-2)}
 .nada{background:#fff;border-radius:22px;padding:34px 22px;text-align:center;box-shadow:var(--sombra)}
 .nada .emo{font-size:38px;display:block;margin-bottom:10px}
 .nada p{color:var(--tinta-2);font-weight:600;margin:0 0 16px}
@@ -372,7 +393,7 @@ let estado = {
   colocados: [],
   sesion: null
 };
-let borrador=null, objetivos={}, vista="stock", filtro="todos", textoBusqueda="", volverA=null, geoActual=null, subiendo=0;
+let borrador=null, objetivos={}, vista="stock", filtro="todos", textoBusqueda="", pagina=0, volverA=null, geoActual=null, subiendo=0;
 let enLinea=false, cola=[];
 
 const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -491,7 +512,7 @@ window.addEventListener("popstate", ()=>{
 function pintarTDs(){
   document.getElementById("rejillaTD").innerHTML = estado.tds.map((t,i)=>{
     const st = estado.stock.filter(s=>s.tdId===t.id).reduce((a,s)=>a+(+s.cantidad||0),0);
-    const co = estado.colocados.filter(c=>c.tdId===t.id).reduce((a,c)=>a+(+c.cantidad||1),0);
+    const co = estado.colocados.filter(c=>c.tdId===t.id && !c.baja).reduce((a,c)=>a+(+c.cantidad||1),0);
     const ini = t.nombre.split(" ").filter(p=>p.length>2).slice(0,2).map(p=>p[0]).join("").toUpperCase();
     return `<button class="td" style="--c:${COLORES[i]}" onclick="elegirTD('${t.id}')">
       <span class="td-globo">${ini}</span>
@@ -608,7 +629,7 @@ function entrar(){
   document.getElementById("appUser").textContent = quien+" · "+(rolElegido==="jv"?"Jefe de Ventas":"Relevador");
   document.getElementById("appPunto").style.setProperty("--c", colorTD(tdElegido.id));
   vista = rolElegido==="jv" ? "stock" : "muebles";
-  filtro = "todos"; textoBusqueda = "";
+  filtro = "todos"; textoBusqueda = ""; pagina = 0;
   pintarBarra(); render(); ir("app");
 }
 function salir(){ estado.sesion=null; pintarTDs(); ir("tds"); }
@@ -623,7 +644,7 @@ function pintarBarra(){
     `<button class="solapa" aria-selected="${vista===s.id}" onclick="verSolapa('${s.id}')">${ICO[s.i]}${s.t}</button>`).join("");
   document.getElementById("fab").style.display = (estado.sesion.rol==="jv" && vista==="colocados") ? "grid":"none";
 }
-function verSolapa(id){ vista=id; textoBusqueda=""; pintarBarra(); render(); window.scrollTo(0,0); }
+function verSolapa(id){ vista=id; textoBusqueda=""; pagina=0; pintarBarra(); render(); window.scrollTo(0,0); }
 function nuevoAqui(){ elegirTipoParaColocar(); }
 
 /* ═══════════ STOCK DEL TD ═══════════ */
@@ -637,7 +658,7 @@ function vistaStock(){
     <p class="bajada">Muebles físicos en el depósito. Al colocar uno, sale del stock y pasa a Colocados.</p>
     <div class="numeritos">
       <div class="numerito" style="--c:var(--turquesa)"><b>${total}</b><span>En depósito</span></div>
-      <div class="numerito" style="--c:var(--naranja)"><b>${misCol().reduce((a,c)=>a+(+c.cantidad||1),0)}</b><span>Colocados</span></div>
+      <div class="numerito" style="--c:var(--naranja)"><b>${misCol().filter(c=>!c.baja).reduce((a,c)=>a+(+c.cantidad||1),0)}</b><span>Colocados</span></div>
     </div>
     <div class="stock">
       ${TIPOS.map(t=>`<div class="mueble" style="--c:${t.c}">
@@ -697,54 +718,76 @@ function elegirTipoParaColocar(){
         <span class="grande">→</span></button>`).join("")}
     </div>`);
 }
-function tarjetaCol(c, paraControl){
-  const e = estadoCol(c), u = ultimo(c), t = tipoInfo(c.tipo), ok = cumple(c);
-  return `<div class="tarjeta" onclick="${paraControl?`fichaControl('${c.id}')`:`abrirColocado('${c.id}')`}">
-    <span class="tarjeta-ico" style="--c:${t.c}">${t.i}</span>
-    <div class="tarjeta-cuerpo">
-      <h4>${esc(c.cliente)}</h4>
-      <p class="sub">${esc(c.razonSocial||"")}${c.localidad?" · "+esc(c.localidad):""}</p>
-      <div class="etiquetas">
-        <span class="etiqueta uva">${(+c.cantidad||1)>1?(c.cantidad+" × "):""}${esc(c.tipo)}</span>
-        ${c.medidas?`<span class="etiqueta">${esc(c.medidas)}</span>`:""}
-        ${c.exhibicion?`<span class="etiqueta ${ok===false?"alerta":"agua"}">${u&&u.real!=null?u.real+"% real / ":""}${c.exhibicion}% pactado</span>`:""}
-        ${c.canonFijo?`<span class="etiqueta sol">Fijo ${plata(c.canonFijo)}</span>`:""}
-        ${c.canonVariable?`<span class="etiqueta sol">Var. ${c.canonVariable}%</span>`:""}
-        ${c.comodatoFotos.length?"":`<span class="etiqueta alerta">Falta foto del comodato</span>`}
-        ${u?`<span class="etiqueta">${diasDesde(u.iso)===0?"revisado hoy":"hace "+diasDesde(u.iso)+" d"}</span>`:""}
-        ${u&&!u.enviado?`<span class="etiqueta alerta">Falta avisar al JV</span>`:""}
-      </div>
-    </div>
-    <span class="estampa ${e.k}">${e.t}</span></div>`;
+function colorCuadro(c){
+  const u = ultimo(c);
+  if(!u || diasDesde(u.iso) > 30) return "blanco";
+  return u.veredicto==="ok" ? "verde" : "rojo";
+}
+function pieCuadro(c){
+  const u = ultimo(c), col = colorCuadro(c);
+  if(col==="blanco") return u ? "Sin visitar hace "+diasDesde(u.iso)+" días" : "Nunca visitado";
+  const d = diasDesde(u.iso), cuando = d===0 ? "hoy" : d===1 ? "ayer" : "hace "+d+" días";
+  if(u.veredicto==="ok") return "Aprobado "+cuando;
+  return (u.estado==="resuelta" ? "Resuelto · observado " : "Observado ")+cuando;
+}
+function cuadroCol(c, paraControl){
+  const col = colorCuadro(c), u = ultimo(c);
+  return `<button class="cuadro ${col}" onclick="${paraControl?`fichaControl('${c.id}')`:`abrirColocado('${c.id}')`}">
+    <span>
+      <span class="cuadro-alto"><i class="cuadro-luz"></i>
+        ${(+c.cantidad||1)>1?`<span class="etiqueta uva">${c.cantidad} muebles</span>`:""}
+        ${u&&!u.enviado?`<span class="etiqueta alerta">sin avisar</span>`:""}</span>
+      <b>${esc(c.cliente)}</b>
+      <span class="chico">${esc(c.tipo)}${c.localidad?" · "+esc(c.localidad):""}</span>
+      ${c.exhibicion&&u&&u.real!=null?`<span class="chico">${u.real}% real / ${c.exhibicion}% pactado</span>`:""}
+    </span>
+    <span class="pie">${pieCuadro(c)}</span></button>`;
 }
 function buscarEn(lista){
   const q = textoBusqueda.trim().toLowerCase();
   if(!q) return lista;
   return lista.filter(c=>[c.cliente,c.razonSocial,c.direccion,c.localidad].join(" ").toLowerCase().includes(q));
 }
+function irPagina(n){ pagina = n; render(); }
+function cambiarFiltro(f){ filtro = f; pagina = 0; render(); }
 function vistaColocados(paraControl){
-  const todos = misCol();
+  const todos = misCol().filter(c=>!c.baja), dados = misCol().filter(c=>c.baja);
   let base = todos;
-  if(filtro==="pendientes") base = todos.filter(c=>!ultimo(c));
-  if(filtro==="abiertas") base = todos.filter(abierta);
-  if(filtro==="ok") base = todos.filter(c=>{const u=ultimo(c); return u&&u.veredicto==="ok";});
+  if(filtro==="verde") base = todos.filter(c=>colorCuadro(c)==="verde");
+  if(filtro==="rojo") base = todos.filter(c=>colorCuadro(c)==="rojo");
+  if(filtro==="blanco") base = todos.filter(c=>colorCuadro(c)==="blanco");
+  if(filtro==="bajas") base = dados;
   const lista = buscarEn(base);
+  const PORPAG = 4;
+  const paginas = Math.max(1, Math.ceil(lista.length/PORPAG));
+  if(pagina >= paginas) pagina = paginas-1;
+  const trozo = lista.slice(pagina*PORPAG, pagina*PORPAG+PORPAG);
   const cab = `<h2 class="titulazo">${paraControl?"Muebles para revisar":"Muebles colocados"}</h2>
     <p class="bajada">${paraControl?"Abrí la ficha, mirá el acuerdo y aprobá u observá.":"Cada mueble con su acuerdo y su comodato."}</p>
-    <div class="numeritos">
-      <div class="numerito" style="--c:var(--naranja)"><b>${todos.length}</b><span>Colocados</span></div>
-      <div class="numerito" style="--c:var(--amarillo)"><b>${todos.filter(c=>!ultimo(c)).length}</b><span>Sin revisar</span></div>
-      <div class="numerito" style="--c:var(--rojo)"><b>${todos.filter(abierta).length}</b><span>Observados</span></div>
+    <div class="leyenda">
+      <span><i style="background:#16C79A"></i>Aprobado</span>
+      <span><i style="background:#FF4757"></i>Observado</span>
+      <span><i style="background:#D9CBE4"></i>Sin visitar hace +30 días</span>
     </div>
-    <input class="buscador" id="busca" placeholder="Buscar cliente o localidad" value="${esc(textoBusqueda)}" oninput="textoBusqueda=this.value;render(true)">
+    <input class="buscador" id="busca" placeholder="Buscar cliente o localidad"
+      value="${esc(textoBusqueda)}" oninput="textoBusqueda=this.value;pagina=0;render(true)">
     <div class="filtritos">
-      ${[["todos","Todos"],["pendientes","Sin revisar"],["abiertas","Observados"],["ok","Aprobados"]].map(([v,l])=>
-        `<button class="filtrito" aria-pressed="${filtro===v}" onclick="filtro='${v}';render()">${l}</button>`).join("")}
+      ${[["todos","Todos ("+todos.length+")"],
+         ["verde","Aprobados ("+todos.filter(c=>colorCuadro(c)==="verde").length+")"],
+         ["rojo","Observados ("+todos.filter(c=>colorCuadro(c)==="rojo").length+")"],
+         ["blanco","Sin visitar ("+todos.filter(c=>colorCuadro(c)==="blanco").length+")"],
+         ["bajas","Dados de baja ("+dados.length+")"]].map(([v,l])=>
+        `<button class="filtrito" aria-pressed="${filtro===v}" onclick="cambiarFiltro('${v}')">${l}</button>`).join("")}
     </div>`;
   if(!lista.length) return cab + `<div class="nada"><span class="emo">🏪</span>
     <p>${todos.length?"No hay muebles con ese filtro.":"Todavía no hay muebles colocados."}</p>
     ${paraControl?"":`<button class="btn chica" onclick="elegirTipoParaColocar()">Colocar el primero</button>`}</div>`;
-  return cab + `<div class="tarjetas">`+lista.map(c=>tarjetaCol(c,paraControl)).join("")+`</div>`;
+  const nav = paginas>1 ? `<div class="paginas">
+      <button class="circulo" ${pagina===0?"disabled style=opacity:.35":""} onclick="irPagina(${pagina-1})">←</button>
+      <b>${pagina+1} de ${paginas}</b>
+      <button class="circulo" ${pagina>=paginas-1?"disabled style=opacity:.35":""} onclick="irPagina(${pagina+1})">→</button>
+    </div>` : "";
+  return cab + `<div class="cuadricula">`+trozo.map(c=>cuadroCol(c,paraControl)).join("")+`</div>` + nav;
 }
 
 function abrirColocado(id, tipo){
@@ -762,6 +805,7 @@ function abrirColocado(id, tipo){
   abrirHoja(`
     <div class="hoja-cab"><button class="equis" onclick="atras()"><b>←</b>Volver</button>
       <h3>${nuevo?"Colocar mueble":esc(borrador.cliente)}</h3></div>
+    ${borrador.baja?`<div class="cartel alerta">Dado de baja el ${esc(borrador.baja.fecha)} por ${esc(borrador.baja.por)}: ${esc(borrador.baja.motivo)}</div>`:""}
     <div class="bloque"><h5>El bloque</h5>
       <div class="mueble" style="--c:${t.c};box-shadow:none;padding:0 0 14px">
         <span class="mueble-ico">${t.i}</span>
@@ -821,6 +865,9 @@ function abrirColocado(id, tipo){
     <div class="bloque"><h5>Foto del mueble colocado</h5>
       <div class="fotos" id="fotos_mueble"></div></div>
 
+    ${nuevo||borrador.baja?"":`<div class="bloque"><h5>Baja del mueble</h5>
+      <p class="pista" style="margin:-6px 0 12px">Si el mueble se retira del cliente, dalo de baja: ${borrador.cantidad||1} vuelve${(borrador.cantidad||1)===1?"":"n"} al stock del TD.</p>
+      <button class="btn rojo ancho" onclick="hojaBaja('${borrador.id}')">↩ Dar de baja y devolver al stock</button></div>`}
     ${nuevo?"":`<button class="btn wasap ancho" style="margin-bottom:12px" onclick="fichaControl('${borrador.id}')">🔍 Ver la ficha de control</button>`}
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       ${nuevo?"":`<button class="btn chica suave" onclick="borrarColocado('${borrador.id}')">Eliminar</button>`}
@@ -881,6 +928,40 @@ function guardarColocado(esNuevo){
     estado.colocados[i] = borrador;
   }
   sincronizar("colocados",borrador); render(); cerrarHoja();
+}
+const MOTIVOS_BAJA = ["El comercio cerró","Cambió de dueño","No cumplía el acuerdo",
+  "Bajo volumen de venta","El comercio pidió retirarlo","Mueble roto: va a reparación",
+  "Se reubica en otro cliente"];
+function hojaBaja(id){
+  const c = estado.colocados.find(x=>x.id===id);
+  objetivos = {baja:[]};
+  abrirHoja(`
+    <div class="hoja-cab"><button class="equis" onclick="atras()"><b>←</b>Volver</button><h3>Dar de baja</h3></div>
+    <div class="cartel alerta">${esc(c.cliente)} · ${(+c.cantidad||1)} × ${esc(c.tipo)}.
+      Al confirmar vuelve${(+c.cantidad||1)===1?"":"n"} al stock del TD.</div>
+    <div class="bloque"><h5>Por qué se retira</h5>
+      <div class="campo"><label>Motivo</label>
+        <select id="b_motivo">${MOTIVOS_BAJA.map(m=>`<option>${m}</option>`).join("")}</select></div>
+      <div class="campo" style="margin:0"><label>Nota</label>
+        <textarea id="b_nota" placeholder="Con quién hablaste, en qué estado volvió el mueble."></textarea></div>
+    </div>
+    <div class="bloque"><h5>Foto del retiro</h5>
+      <p class="pista" style="margin:-6px 0 12px">Queda como constancia del estado en que volvió.</p>
+      <div class="fotos" id="fotos_baja"></div></div>
+    <button class="btn rojo ancho" onclick="confirmarBaja('${id}')">Confirmar la baja</button>`,
+    ()=>abrirColocado(id));
+  pintarFotos("baja");
+}
+function confirmarBaja(id){
+  const c = estado.colocados.find(x=>x.id===id);
+  const n = +c.cantidad||1;
+  c.baja = {fecha:hoy(), iso:new Date().toISOString(), por:estado.sesion.usuario,
+    motivo:document.getElementById("b_motivo").value,
+    nota:document.getElementById("b_nota").value.trim(), fotos:objetivos.baja};
+  moverStock(c.tipo, -n);
+  sincronizar("colocados",c);
+  render(); cerrarHoja();
+  alert(n+" mueble"+(n===1?"":"s")+" de vuelta en el stock del TD.");
 }
 function borrarColocado(id){
   const c = estado.colocados.find(x=>x.id===id);
@@ -1217,7 +1298,7 @@ function resolverLink(idc, idk){
 /* ═══════════ RESUMEN ═══════════ */
 function vistaResumen(){
   const td = estado.tds.find(t=>t.id===estado.sesion.tdId);
-  const col = misCol();
+  const col = misCol().filter(c=>!c.baja);
   const conPct = col.filter(c=>c.exhibicion && ultimo(c) && ultimo(c).real!=null);
   const cumplen = conPct.filter(c=>cumple(c)===true);
   const canonRiesgo = conPct.filter(c=>cumple(c)===false).reduce((a,c)=>a+(+c.canonFijo||0),0);
@@ -1281,13 +1362,14 @@ function exportar(cual){
       (u.fotos||[]).map(linkFoto).filter(Boolean).join(" ")])));
   }else{
     filas = [["TD","Zona","Cliente","Razón social","Dirección","Localidad","Mueble","Cantidad","Medidas","Fecha de firma",
-      "Foto comodato","% pactado","Canon fijo","Canon variable %","JV","Vendedor","Repositor","% real último","Cumple","Estado","Controles","Colocó","Fecha"]];
+      "Foto comodato","% pactado","Canon fijo","Canon variable %","JV","Vendedor","Repositor","% real último","Cumple","Estado","Controles","Colocó","Fecha","Baja","Motivo de la baja"]];
     misCol().forEach(c=>{ const u = ultimo(c);
       filas.push([td.nombre,td.zona,c.cliente,c.razonSocial,c.direccion,c.localidad,c.tipo,+c.cantidad||1,c.medidas||"",c.fechaFirma,
         (c.comodatoFotos||[]).map(linkFoto).filter(Boolean).join(" ")||"No",c.exhibicion||"",c.canonFijo||"",c.canonVariable||"",
         c.jv?c.jv.nombre:"",c.vendedor?c.vendedor.nombre:"",c.repositor?c.repositor.nombre:"",
         u&&u.real!=null?u.real:"",cumple(c)===null?"":(cumple(c)?"Sí":"No"),
-        estadoCol(c).t,(c.controles||[]).length,c.por,c.fecha]); });
+        estadoCol(c).t,(c.controles||[]).length,c.por,c.fecha,
+        c.baja?c.baja.fecha:"",c.baja?c.baja.motivo:""]); });
   }
   const csv = "\uFEFF"+filas.map(f=>f.map(x=>`"${String(x??"").replace(/"/g,'""')}"`).join(";")).join("\n");
   const a = document.createElement("a");
