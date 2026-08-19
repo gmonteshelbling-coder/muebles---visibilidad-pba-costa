@@ -179,6 +179,10 @@ h1,h2,h3,h4{font-family:var(--display);font-weight:600;letter-spacing:-.01em;mar
 .estampa.obs{background:#FFE9EB;color:#D62839}
 .estampa.gestion{background:#F0EBFF;color:#5B3FE0}
 .estampa.retirado{background:#EFEAF3;color:#7A6B8C}
+.atajos{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0 4px}
+.atajo{background:#fff;border:2px solid var(--linea);border-radius:99px;padding:7px 14px;
+  font-weight:800;font-size:13.5px;cursor:pointer;color:var(--tinta-2)}
+.atajo:active{background:var(--violeta);border-color:var(--violeta);color:#fff}
 .barrita{height:9px;border-radius:99px;background:#F0E4EC;overflow:hidden;margin:8px 0 4px}
 .barrita i{display:block;height:100%;border-radius:99px;background:var(--verde);transition:width .3s}
 .barrita i.flojo{background:var(--rojo)}
@@ -292,7 +296,7 @@ h1,h2,h3,h4{font-family:var(--display);font-weight:600;letter-spacing:-.01em;mar
 <section class="pantalla" id="tds">
   <div class="cabecera">
     <div class="cabecera-txt"><b>Carameleras y Acuerdos</b><span>PDV · PBA Costa</span></div>
-    <button class="volver" onclick="ir('portada')" aria-label="Inicio">🏠</button>
+    <button class="volver" onclick="ir('portada')" aria-label="Volver a la portada">←</button>
   </div>
   <div class="envoltura" style="padding-bottom:40px">
     <h2 class="titulazo">¿Con qué TD entrás?</h2>
@@ -316,16 +320,17 @@ h1,h2,h3,h4{font-family:var(--display);font-weight:600;letter-spacing:-.01em;mar
       <div class="roles">
         <button class="rol" id="rolCarga" aria-pressed="true" onclick="elegirRol('carga')">
           <span class="rol-ico" style="background:var(--turquesa)">📦</span>
-          <span><b>Carga de stock</b><span>Muebles en depósito y colocados, comodatos y acuerdos.</span></span></button>
+          <span><b>Jefe de Ventas</b><span>Da de alta los muebles en el depósito del TD, los coloca en PDV y resuelve las observaciones.</span></span></button>
         <button class="rol" id="rolControl" aria-pressed="false" onclick="elegirRol('control')">
           <span class="rol-ico" style="background:var(--naranja)">✅</span>
-          <span><b>Control de mueble</b><span>Recorre, aprueba u observa con motivos y fotos.</span></span></button>
+          <span><b>Personal Mondelez</b><span>Coloca muebles que salen del depósito y controla los que ya están en la calle.</span></span></button>
       </div>
-      <div class="campo" id="cajaEncargado"><label for="encargado">Jefe de Ventas</label>
+      <div class="campo" id="cajaEncargado"><label for="encargado">¿Cuál de los dos sos?</label>
         <select id="encargado"></select>
-        <p class="pista">Queda registrado quién cargó cada mueble.</p></div>
-      <div class="campo" id="cajaUsuario" style="display:none"><label for="usuario">Usuario</label>
-        <input id="usuario" autocomplete="username" placeholder="nombre.apellido"></div>
+        <p class="pista">Queda registrado quién dio de alta y quién colocó cada mueble.</p></div>
+      <div class="campo" id="cajaUsuario" style="display:none"><label for="usuario">Tu nombre</label>
+        <input id="usuario" autocomplete="name" placeholder="Nombre y apellido">
+        <p class="pista">Queda registrado en cada colocación y en cada control.</p></div>
       <div class="campo"><label for="clave">Contraseña</label>
         <input id="clave" type="password" autocomplete="current-password" placeholder="••••••••"></div>
       <div class="error" id="errorLogin"></div>
@@ -340,7 +345,7 @@ h1,h2,h3,h4{font-family:var(--display);font-weight:600;letter-spacing:-.01em;mar
   <div class="cabecera">
     <span class="punto" id="appPunto"></span>
     <div class="cabecera-txt"><b id="appTD">TD</b><span id="appUser"></span></div>
-    <button class="volver" onclick="salir()" aria-label="Salir">↩</button>
+    <button class="volver" onclick="salir()" aria-label="Volver a los TD">←</button>
   </div>
   <div class="envoltura" id="contenido"></div>
   <nav class="barra-abajo" id="barraAbajo"></nav>
@@ -478,9 +483,33 @@ function normalizar(){
   });
 }
 function ir(id){ document.querySelectorAll(".pantalla").forEach(s=>s.classList.toggle("activa",s.id===id)); window.scrollTo(0,0); }
-function cerrarHoja(){ document.getElementById("telon").classList.remove("abierto"); }
-function abrirHoja(html){ const h=document.getElementById("hoja"); h.innerHTML=html;
-  document.getElementById("telon").classList.add("abierto"); h.scrollTop=0; }
+let volverA = null;                       // qué hoja se reabre al tocar atrás
+function cerrarHoja(){
+  document.getElementById("telon").classList.remove("abierto");
+  volverA = null;
+  if(location.hash==="#hoja") history.back();
+}
+function abrirHoja(html, alVolver){
+  const h = document.getElementById("hoja");
+  h.innerHTML = html;
+  const yaAbierta = document.getElementById("telon").classList.contains("abierto");
+  document.getElementById("telon").classList.add("abierto");
+  h.scrollTop = 0;
+  volverA = alVolver || null;
+  if(!yaAbierta && location.hash!=="#hoja") history.pushState({hoja:true}, "", "#hoja");
+}
+function atras(){
+  const f = volverA;
+  document.getElementById("telon").classList.remove("abierto");
+  volverA = null;
+  if(f){ f(); } else if(location.hash==="#hoja"){ history.back(); }
+}
+// el botón físico de atrás del celular cierra la hoja en vez de salir de la app
+window.addEventListener("popstate", ()=>{
+  const t = document.getElementById("telon");
+  if(t.classList.contains("abierto")){ t.classList.remove("abierto"); volverA = null; }
+  else if(estado.sesion){ salir(); }
+});
 const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const hoy = () => new Date().toLocaleDateString("es-AR",{day:"2-digit",month:"2-digit",year:"numeric"});
 const plata = n => n ? "$ "+Number(n).toLocaleString("es-AR") : "";
@@ -502,8 +531,8 @@ function pintarTDs(){
 }
 function hojaPerfil(soloId){
   const lista = soloId ? estado.tds.filter(t=>t.id===soloId) : estado.tds;
-  abrirHoja(`<div class="hoja-cab"><h3>${soloId?"Perfil del TD":"Perfiles de los TD"}</h3>
-      <button class="equis" onclick="cerrarHoja()">✕</button></div>
+  abrirHoja(`<div class="hoja-cab"><button class="equis" onclick="atras()" aria-label="Atrás">←</button><h3>${soloId?"Perfil del TD":"Perfiles de los TD"}</h3>
+      </div>
     <p class="bajada">Los dos Jefes de Ventas de cada TD con su WhatsApp. A ese número llegan los controles.</p>
     ${lista.map(t=>{ const i = estado.tds.indexOf(t);
       return `<div class="bloque"><h5 style="color:${COLORES[i]}">${esc(t.nombre)}</h5>
@@ -560,24 +589,27 @@ function entrar(){
   err.textContent="";
   estado.sesion = {tdId:tdElegido.id, usuario:quien, rol:rolElegido};
   document.getElementById("appTD").textContent = tdElegido.nombre;
-  document.getElementById("appUser").textContent = quien + " · " + (rolElegido==="carga"?"Carga":"Control");
+  document.getElementById("appUser").textContent = quien + " · " + (rolElegido==="carga"?"Jefe de Ventas":"Mondelez");
   document.getElementById("appPunto").style.setProperty("--c", colorTD(tdElegido.id));
   vista = rolElegido==="carga" ? "deposito" : "pendientes";
+  filtro = "activos";
   pintarBarra(); render(); ir("app");
 }
 function salir(){ estado.sesion=null; pintarTDs(); ir("tds"); }
 
 /* ══════════ NAVEGACIÓN ══════════ */
 const SOLAPAS = {
-  carga:[{id:"deposito",t:"Depósito",i:"caja"},{id:"colocados",t:"Colocados",i:"local"},{id:"resumen",t:"Resumen",i:"panel"}],
-  control:[{id:"pendientes",t:"Por revisar",i:"reloj"},{id:"abiertas",t:"Abiertas",i:"alerta"},
-           {id:"historial",t:"Historial",i:"tilde"},{id:"resumen",t:"Resumen",i:"panel"}]
+  carga:[{id:"deposito",t:"Depósito",i:"caja"},{id:"colocados",t:"Colocados",i:"local"},
+         {id:"abiertas",t:"Abiertas",i:"alerta"},{id:"resumen",t:"Resumen",i:"panel"}],
+  control:[{id:"colocados",t:"Colocados",i:"local"},{id:"pendientes",t:"Por revisar",i:"reloj"},
+           {id:"abiertas",t:"Abiertas",i:"alerta"},{id:"resumen",t:"Resumen",i:"panel"}]
 };
 function pintarBarra(){
   document.getElementById("barraAbajo").innerHTML = SOLAPAS[estado.sesion.rol].map(s=>
     `<button class="solapa" aria-selected="${vista===s.id}" onclick="verSolapa('${s.id}')">${ICO[s.i]}${s.t}</button>`).join("");
   const fab = document.getElementById("fab");
-  fab.style.display = (estado.sesion.rol==="carga" && vista!=="resumen") ? "grid":"none";
+  const puede = vista==="colocados" || (vista==="deposito" && estado.sesion.rol==="carga");
+  fab.style.display = puede ? "grid" : "none";
 }
 function verSolapa(id){ vista=id; pintarBarra(); render(); window.scrollTo(0,0); }
 function nuevoAqui(){ vista==="deposito" ? abrirDeposito(null) : abrirColocado(null,null); }
@@ -600,7 +632,9 @@ function estadoCol(c){
 }
 const porRevisar = c => !c.retiro && (!ultimo(c) || diasDesde(ultimo(c).iso) >= DIAS_CONTROL);
 const abierta = c => { const u = ultimo(c); return !c.retiro && u && u.veredicto==="obs" && u.estado!=="resuelta"; };
-const pctReal = u => (u && u.total) ? Math.round((+u.ocupados||0)*100/(+u.total)) : null;
+const pctReal = u => !u ? null
+  : (u.real!==undefined && u.real!=="" && u.real!==null) ? +u.real
+  : (u.total ? Math.round((+u.ocupados||0)*100/(+u.total)) : null);
 function cumple(c){
   const u = ultimo(c); const r = pctReal(u);
   if(r===null || !c.exhibicion) return null;
@@ -637,7 +671,8 @@ function listaDeposito(){
   </div>`;
   if(!lista.length) return cab + `<div class="nada"><span class="emo">📦</span>
     <p>${dep.length?"Ningún modelo coincide con la búsqueda.":"Todavía no hay muebles en depósito."}</p>
-    <button class="btn chica" onclick="abrirDeposito(null)">Cargar ingreso</button></div>`;
+    ${estado.sesion.rol==="carga"?`<button class="btn chica" onclick="abrirDeposito(null)">Cargar ingreso</button>`
+      :`<p class="pista">El alta de muebles en el depósito la hace el Jefe de Ventas del TD.</p>`}</div>`;
   return cab + `<div class="tarjetas">` + lista.map(d=>`
     <div class="tarjeta" onclick="abrirDeposito('${d.id}')">
       <span class="tarjeta-ico" style="--c:var(--turquesa)">${ICO.caja}</span>
@@ -782,7 +817,7 @@ function vistaResumen(){
       </div></div>
     <div class="bloque"><h5>Sesión</h5>
       <div class="resumen-linea"><span>Entraste como</span><b>${esc(estado.sesion.usuario)}</b></div>
-      <div class="resumen-linea"><span>Rol</span><b>${estado.sesion.rol==="carga"?"Carga de stock":"Control de mueble"}</b></div>
+      <div class="resumen-linea"><span>Rol</span><b>${estado.sesion.rol==="carga"?"Jefe de Ventas":"Personal Mondelez"}</b></div>
       <button class="btn ancho suave" style="margin-top:14px" onclick="salir()">Cambiar de TD</button>
     </div>`;
 }
@@ -801,8 +836,8 @@ function abrirDeposito(id){
   const nuevo = !id;
   objetivos = {deposito:borrador.fotos};
   abrirHoja(`
-    <div class="hoja-cab"><h3>${nuevo?"Ingreso a depósito":esc(borrador.modelo)}</h3>
-      <button class="equis" onclick="cerrarHoja()">✕</button></div>
+    <div class="hoja-cab"><button class="equis" onclick="atras()" aria-label="Atrás">←</button><h3>${nuevo?"Ingreso a depósito":esc(borrador.modelo)}</h3>
+      </div>
     <div class="bloque"><h5>El mueble</h5>
       <div class="dupla">
         <div class="campo"><label>Modelo</label><select id="d_modelo">${opciones(MODELOS,borrador.modelo)}</select></div>
@@ -863,9 +898,19 @@ function abrirColocado(id, desde){
   const nuevoReg = !id;
   objetivos = {mueble:borrador.fotos, comodato:borrador.comodatoFotos};
   abrirHoja(`
-    <div class="hoja-cab"><h3>${nuevoReg?"Mueble colocado":esc(borrador.nombre)}</h3>
-      <button class="equis" onclick="cerrarHoja()">✕</button></div>
-    ${desde?`<div class="cartel uva">Sale de depósito: ${esc(desde.modelo)}. Al guardar se descuenta una unidad.</div>`:""}
+    <div class="hoja-cab"><button class="equis" onclick="atras()" aria-label="Atrás">←</button><h3>${nuevoReg?"Mueble colocado":esc(borrador.nombre)}</h3>
+      </div>
+    ${nuevoReg?`<div class="bloque"><h5>Sale del depósito</h5>
+      <p class="pista" style="margin:-6px 0 12px">Elegí de qué mueble del stock sale. Al guardar se descuenta una unidad.</p>
+      <div class="campo" style="margin:0"><label>Mueble del depósito</label>
+        <select id="c_origen" onchange="cambiarOrigen()">
+          <option value="">— sin descontar del stock —</option>
+          ${misDep().filter(d=>(+d.cantidad||0)>0).map(d=>
+            `<option value="${d.id}" ${desde&&desde.id===d.id?"selected":""}>${esc(d.modelo)} · ${esc(d.condicion)} · quedan ${d.cantidad}</option>`).join("")}
+        </select></div>
+      ${misDep().filter(d=>(+d.cantidad||0)>0).length?"":`<p class="pista" style="color:var(--rojo);margin-top:10px">No hay stock cargado en el depósito de este TD.</p>`}
+    </div>`:""}
+    ${!nuevoReg?`<button class="btn wasap ancho" style="margin-bottom:12px" onclick="abrirRevision('${borrador.id}')">🔍 Controlar este mueble</button>`:""}
     ${borrador.retiro?`<div class="cartel alerta">Retirado el ${esc(borrador.retiro.fecha)} por ${esc(borrador.retiro.por)}: ${esc(borrador.retiro.motivo)}</div>`:""}
 
     <div class="bloque"><h5>Punto de venta</h5>
@@ -924,8 +969,16 @@ function abrirColocado(id, desde){
     </div>`);
   pintarFotos("mueble"); pintarFotos("comodato");
 }
+function cambiarOrigen(){
+  const d = estado.deposito.find(x=>x.id===document.getElementById("c_origen").value);
+  if(!d) return;
+  document.getElementById("c_mueble").value = d.modelo;
+  document.getElementById("c_escalones").value = d.escalones;
+}
 function guardarColocado(){
   const v = id => document.getElementById(id).value;
+  const selOrigen = document.getElementById("c_origen");
+  if(selOrigen) borrador.origen = selOrigen.value;
   Object.assign(borrador,{
     nombre:v("c_nombre").trim(), direccion:v("c_direccion").trim(), localidad:v("c_localidad").trim(),
     canal:v("c_canal"), mueble:v("c_mueble"), escalones:+v("c_escalones")||1,
@@ -959,7 +1012,7 @@ function hojaRetiro(id){
   const c = estado.colocados.find(x=>x.id===id);
   objetivos = {retiro:[]};
   abrirHoja(`
-    <div class="hoja-cab"><h3>Retirar el mueble</h3><button class="equis" onclick="abrirColocado('${id}',null)">✕</button></div>
+    <div class="hoja-cab"><button class="equis" onclick="atras()" aria-label="Atrás">←</button><h3>Retirar el mueble</h3></div>
     <div class="cartel uva">${esc(c.nombre)} · ${esc(c.mueble)}. Al confirmar vuelve al stock de depósito.</div>
     <div class="bloque"><h5>Por qué se retira</h5>
       <div class="campo"><label>Motivo</label><select id="r_motivo">${opciones(MOTIVOS_RETIRO,MOTIVOS_RETIRO[0])}</select></div>
@@ -970,7 +1023,8 @@ function hojaRetiro(id){
     <div class="bloque"><h5>Foto del retiro</h5>
       <p class="pista" style="margin:-6px 0 12px">Sirve como constancia del estado en que volvió el mueble.</p>
       <div class="fotos" id="fotos_retiro"></div></div>
-    <button class="btn rojo ancho" onclick="confirmarRetiro('${id}')">Confirmar retiro</button>`);
+    <button class="btn rojo ancho" onclick="confirmarRetiro('${id}')">Confirmar retiro</button>`,
+    ()=>abrirColocado(id,null));
   pintarFotos("retiro");
 }
 function confirmarRetiro(id){
@@ -1099,15 +1153,18 @@ function pintarGeo(){
 }
 const geoLink = g => g ? "https://maps.google.com/?q="+g.lat+","+g.lng : "";
 
+function ponerPct(v){ document.getElementById("ocu").value = v; calcularOcupacion(); }
 function calcularOcupacion(){
-  const o = +document.getElementById("ocu").value||0, t = +document.getElementById("tot").value||0;
-  const pact = +document.getElementById("ocu").dataset.pactado||0;
-  const p = t ? Math.round(o*100/t) : 0;
+  const campo = document.getElementById("ocu"); if(!campo) return;
+  const p = campo.value==="" ? null : Math.max(0,Math.min(100,+campo.value));
+  const pact = +campo.dataset.pactado||0;
   const barra = document.getElementById("barraOcu"), txt = document.getElementById("ocuTxt");
-  if(barra){ barra.style.width = Math.min(p,100)+"%"; barra.className = (pact && p < pact-5) ? "flojo":""; }
-  if(txt) txt.textContent = !t ? "" : (pact
-    ? (p+"% real contra "+pact+"% pactado · "+(p>=pact-5?"cumple":"no cumple, faltan "+(pact-p)+" puntos"))
-    : (p+"% de la cascada con producto nuestro"));
+  if(barra){ barra.style.width = (p||0)+"%"; barra.className = (pact && p!==null && p < pact-5) ? "flojo":""; }
+  if(!txt) return;
+  if(p===null){ txt.textContent = pact ? "Se pactó "+pact+"% de exhibición." : "Cargá qué porcentaje del mueble tiene producto nuestro."; return; }
+  txt.textContent = pact
+    ? (p+"% real contra "+pact+"% pactado · "+(p>=pact-5 ? "cumple" : "no cumple, faltan "+(pact-p)+" puntos"))
+    : (p+"% del mueble con producto nuestro");
 }
 
 function abrirRevision(id){
@@ -1117,7 +1174,7 @@ function abrirRevision(id){
   const u = ultimo(p);
   const galeria = arr => `<div class="fotos">${arr.map(f=>`<a class="foto" href="${linkFoto(f)||srcFoto(f)}" target="_blank" rel="noopener"><img src="${srcFoto(f)}" alt="" loading="lazy"></a>`).join("")}</div>`;
   abrirHoja(`
-    <div class="hoja-cab"><h3>${esc(p.nombre)}</h3><button class="equis" onclick="cerrarHoja()">✕</button></div>
+    <div class="hoja-cab"><button class="equis" onclick="atras()" aria-label="Atrás">←</button><h3>${esc(p.nombre)}</h3></div>
     ${abierta(p)?`<div class="cartel alerta">Quedó una observación sin resolver del ${esc(u.fecha)}. Si la arreglaron, marcala como resuelta en el historial.</div>`:""}
     <div class="bloque"><h5>La ficha</h5>
       <div class="resumen-linea"><span>Mueble</span><b>${esc(p.mueble)} · ${p.escalones} esc.</b></div>
@@ -1132,12 +1189,12 @@ function abrirRevision(id){
     ${p.fotos.length?`<div class="bloque"><h5>Cómo se colocó</h5>${galeria(p.fotos)}</div>`:""}
 
     <div class="bloque"><h5>Exhibición real</h5>
-      <div class="dupla">
-        <div class="campo" style="margin:0"><label>Escalones nuestros</label>
-          <input id="ocu" type="number" min="0" max="20" value="" placeholder="0"
-            data-pactado="${p.exhibicion||0}" oninput="calcularOcupacion()"></div>
-        <div class="campo" style="margin:0"><label>Escalones totales</label>
-          <input id="tot" type="number" min="1" max="20" value="${p.escalones}" oninput="calcularOcupacion()"></div>
+      <p class="pista" style="margin:-6px 0 12px">Qué porcentaje del mueble está ocupado hoy con producto nuestro.</p>
+      <div class="campo" style="margin:0"><label>% de exhibición real</label>
+        <input id="ocu" type="number" min="0" max="100" value="" placeholder="0"
+          data-pactado="${p.exhibicion||0}" oninput="calcularOcupacion()"></div>
+      <div class="atajos">
+        ${[0,25,50,75,100].map(v=>`<button class="atajo" onclick="ponerPct(${v})">${v}%</button>`).join("")}
       </div>
       <div class="barrita"><i id="barraOcu" style="width:0"></i></div>
       <p class="pista" id="ocuTxt"></p>
@@ -1169,6 +1226,7 @@ function abrirRevision(id){
     </div>
 
     ${(p.controles||[]).length?`<div class="bloque"><h5>Historial de controles</h5>${historialHTML(p)}</div>`:""}
+    <button class="btn ancho suave" onclick="abrirColocado('${p.id}',null)">✏️ Editar la ficha del PDV</button>
   `);
   pintarFotos("revision"); calcularOcupacion(); pedirGeo();
 }
@@ -1202,8 +1260,8 @@ function nuevoControl(p, veredicto, motivos, comentario){
     fecha: hoy(),
     hora: ahora.toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"}),
     veredicto, motivos, comentario,
-    ocupados: +(document.getElementById("ocu")||{}).value || 0,
-    total: +(document.getElementById("tot")||{}).value || p.escalones,
+    real: (document.getElementById("ocu")||{}).value==="" ? null
+          : Math.max(0,Math.min(100, +(document.getElementById("ocu")||{}).value)),
     fotos: objetivos.revision || [],
     geo: geoActual,
     por: estado.sesion.usuario,
@@ -1254,7 +1312,7 @@ function textoMensaje(p){
   if(p.titular) L.push("👤 Titular: "+p.titular+(p.fechaFirma?" (firmó el "+p.fechaFirma+")":""));
   L.push("📄 Comodato "+(p.comodato||"s/n")+" · "+p.cantComodato+" mueble"+(p.cantComodato===1?"":"s")+(p.hasta?" · vence "+p.hasta:""));
   L.push("🤝 "+p.acuerdo+(p.exhibicion?" · "+p.exhibicion+"% pactado":""));
-  if(real!==null) L.push((real>=(+p.exhibicion||0)-5?"📊 ":"📉 ")+"Exhibición real: "+real+"% ("+r.ocupados+" de "+r.total+" escalones)"+
+  if(real!==null) L.push((real>=(+p.exhibicion||0)-5?"📊 ":"📉 ")+"Exhibición real: "+real+"%"+
     (p.exhibicion? (real>=(+p.exhibicion)-5?" · cumple":" · NO cumple, faltan "+((+p.exhibicion)-real)+" puntos"):""));
   if(p.canonFijo||p.canonVariable)
     L.push("💵 Canon: "+(p.canonFijo?plata(p.canonFijo)+" fijo":"sin fijo")+(p.canonVariable?" + "+p.canonVariable+"% variable":""));
@@ -1290,8 +1348,8 @@ function pantallaEnvio(id){
   const r = ultimo(p), ok = r.veredicto==="ok";
   const jefes = jefesConTel(p.tdId);
   abrirHoja(`
-    <div class="hoja-cab"><h3>${ok?"Quedó OK":"Observación guardada"}</h3>
-      <button class="equis" onclick="cerrarHoja()">✕</button></div>
+    <div class="hoja-cab"><button class="equis" onclick="atras()" aria-label="Atrás">←</button><h3>${ok?"Quedó OK":"Observación guardada"}</h3>
+      </div>
     <div class="bloque">
       <div class="exito"><span class="emo">${ok?"🎉":"🔧"}</span>
         <h3>${ok?"Todo en orden":"Hay que arreglarlo"}</h3>
@@ -1340,7 +1398,7 @@ function revisarLink(){
   const galeria = arr => `<div class="fotos">${(arr||[]).map(f=>`<a class="foto" href="${linkFoto(f)||srcFoto(f)}" target="_blank" rel="noopener"><img src="${srcFoto(f)}" alt="" loading="lazy"></a>`).join("")}</div>`;
   const r = pctReal(u);
   abrirHoja(`
-    <div class="hoja-cab"><h3>${esc(c.nombre)}</h3><button class="equis" onclick="cerrarLink()">✕</button></div>
+    <div class="hoja-cab"><button class="equis" onclick="atras()" aria-label="Atrás">←</button><h3>${esc(c.nombre)}</h3></div>
     <div class="cartel ${u.veredicto==="ok"?"uva":"alerta"}">
       ${u.veredicto==="ok"?"Control OK":"Observación"} del ${esc(u.fecha)} · ${esc(td.nombre)} · revisó ${esc(u.por)}</div>
     <div class="bloque"><h5>Qué se encontró</h5>
@@ -1377,7 +1435,7 @@ function resolverLink(idPdv, idCtrl, nuevo){
   if(nuevo==="resuelta") u.resolucion = {por:nombre, fecha:hoy(), nota:""};
   sincronizar("colocados",p);
   if(estado.sesion) render();
-  abrirHoja(`<div class="hoja-cab"><h3>Listo</h3><button class="equis" onclick="cerrarLink()">✕</button></div>
+  abrirHoja(`<div class="hoja-cab"><button class="equis" onclick="atras()" aria-label="Atrás">←</button><h3>Listo</h3></div>
     <div class="bloque"><div class="exito"><span class="emo">${nuevo==="resuelta"?"✅":"🔧"}</span>
       <h3>${nuevo==="resuelta"?"Marcado como resuelto":"Quedó en gestión"}</h3>
       <p>El equipo lo ve al instante.</p></div></div>
@@ -1395,14 +1453,14 @@ function exportar(cual){
       d.condicion,d.ubicacion,d.obs,(d.fotos||[]).map(linkFoto).filter(Boolean).join(" "),d.por,d.fecha]));
   }else if(cual==="controles"){
     filas = [["TD","Comercio","Localidad","Fecha","Hora","Veredicto","Estado","Motivos","Detalle",
-      "Escalones nuestros","Escalones totales","% real","% pactado","Cumple","Revisó","Avisado al JV",
+      "% real","% pactado","Cumple","Revisó","Avisado al JV",
       "Resuelto por","Fecha resolución","Ubicación","Fotos"]];
     misCol().forEach(c=>(c.controles||[]).forEach(u=>{
       const r = pctReal(u);
       filas.push([td.nombre,c.nombre,c.localidad,u.fecha,u.hora||"",
         u.veredicto==="ok"?"OK":"Observada",
         u.veredicto==="ok"?"":(u.estado==="resuelta"?"Resuelta":u.estado==="gestion"?"En gestión":"Abierta"),
-        (u.motivos||[]).join(" | "),u.comentario||"",u.ocupados,u.total,
+        (u.motivos||[]).join(" | "),u.comentario||"",
         r!==null?r:"",c.exhibicion||"",
         (r!==null&&c.exhibicion)?(r>=(+c.exhibicion)-5?"Sí":"No"):"",
         u.por,u.enviado?"Sí":"No",
