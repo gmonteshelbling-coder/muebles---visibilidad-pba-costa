@@ -278,6 +278,7 @@ h1,h2,h3,h4{font-family:var(--display);font-weight:600;letter-spacing:-.01em;mar
     <div class="marca">🍬 Relevamiento 2026</div>
     <h1>Carameleras <em>PBA Costa</em></h1>
     <p>Stock de muebles, acuerdos con el PDV y control en la calle.</p>
+    <p style="font-size:12.5px;opacity:.8;margin:-16px 0 22px" id="verPortada"></p>
     <button class="btn blanco" onclick="ir('tds')">Empezar</button>
   </div>
 </section>
@@ -348,6 +349,7 @@ h1,h2,h3,h4{font-family:var(--display);font-weight:600;letter-spacing:-.01em;mar
 /* ═══════════ CONFIGURACIÓN ═══════════ */
 const API = "https://script.google.com/macros/s/AKfycbz86hwFpiVDC8vV10BVGw5x1L0l9va41ac13g449QgaY0z4jq2AFsYDqEa0_BO83D0/exec";
 const CLAVE_APP = "costa2026";
+const VERSION = "v13 · cuadrícula y bajas";
 const ALMACEN = "carameleras-v4";
 
 const TIPOS = [
@@ -1332,6 +1334,7 @@ function vistaResumen(){
     <div class="bloque"><h5>Sesión</h5>
       <div class="dato-linea"><span>Entraste como</span><b>${esc(estado.sesion.usuario)}</b></div>
       <div class="dato-linea"><span>Rol</span><b>${estado.sesion.rol==="jv"?"Jefe de Ventas":"Relevador"}</b></div>
+      <div class="dato-linea"><span>Versión de la app</span><b>${VERSION}</b></div>
       <button class="btn ancho suave" style="margin-top:12px" onclick="salir()">Cambiar de TD</button></div>`;
 }
 
@@ -1377,6 +1380,7 @@ function exportar(cual){
   a.download = cual+"-"+slug+".csv"; a.click();
 }
 
+document.getElementById("verPortada").textContent = "Versión "+VERSION;
 document.addEventListener("visibilitychange", ()=>{ if(document.hidden) guardarCache(); });
 window.addEventListener("pagehide", guardarCache);
 
