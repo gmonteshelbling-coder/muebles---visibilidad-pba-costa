@@ -427,6 +427,18 @@ function marcarLinea(ok){
   b.textContent = cola.length ? "⚠️ "+cola.length+" cambio(s) sin guardar en el servidor. Se reintenta solo."
                               : "Sin conexión. Estás trabajando sobre la copia del teléfono.";
 }
+/**
+ * Junta lo del servidor con lo del teléfono sin perder nada.
+ * Lo local manda si todavía está esperando subir; lo que sólo existe
+ * acá se conserva siempre, aunque el servidor no lo tenga.
+ */
+function fusionar(local, remoto){
+  const pendientes = new Set(cola.filter(x=>x.registro).map(x=>x.registro.id));
+  const mapa = new Map();
+  (remoto||[]).forEach(r=>mapa.set(r.id, r));
+  (local||[]).forEach(l=>{ if(pendientes.has(l.id) || !mapa.has(l.id)) mapa.set(l.id, l); });
+  return [...mapa.values()];
+}
 async function cargarDatos(){
   try{
     const c = localStorage.getItem(ALMACEN);
@@ -440,7 +452,8 @@ async function cargarDatos(){
     await vaciarCola();
     const d = await api({accion:"listar"});
     if(d.tds && d.tds.length) estado.tds = d.tds;
-    estado.stock = d.stock||[]; estado.colocados = d.colocados||[];
+    estado.stock     = fusionar(estado.stock,     d.stock||[]);
+    estado.colocados = fusionar(estado.colocados, d.colocados||[]);
     marcarLinea(true); normalizar(); guardarCache(); pintarTDs();
     if(estado.sesion) render();
     verLink();
@@ -1026,10 +1039,12 @@ function pantallaEnvio(id){
     <button class="btn ancho" onclick="cerrarHoja()">Listo</button>`);
 }
 function mandar(id, tel){
-  window.open("https://wa.me/"+telLimpio(tel)+"?text="+encodeURIComponent(document.getElementById("msg").value),"_blank");
+  const texto = document.getElementById("msg").value;
   const c = estado.colocados.find(x=>x.id===id), u = ultimo(c);
   u.enviado = true; u.fechaEnvio = hoy();
+  guardarCache();                     // primero se guarda, después se sale de la app
   sincronizar("colocados",c); render();
+  window.open("https://wa.me/"+telLimpio(tel)+"?text="+encodeURIComponent(texto),"_blank");
 }
 function copiar(){
   const t = document.getElementById("msg");
@@ -1156,6 +1171,9 @@ function exportar(cual){
   a.href = URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
   a.download = cual+"-"+slug+".csv"; a.click();
 }
+
+document.addEventListener("visibilitychange", ()=>{ if(document.hidden) guardarCache(); });
+window.addEventListener("pagehide", guardarCache);
 
 cargarDatos();
 </script>
