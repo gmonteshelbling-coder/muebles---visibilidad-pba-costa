@@ -366,7 +366,8 @@ const ICO = {
 /* ═══════════ ESTADO ═══════════ */
 let estado = {
   tds: NOMBRES_TD.map((n,i)=>({id:"td"+(i+1), nombre:n, zona:"",
-        jefes:[{nombre:"Jefe de Ventas 1",tel:""},{nombre:"Jefe de Ventas 2",tel:""}]})),
+        jefes:[{nombre:"Jefe de Ventas 1",tel:""},{nombre:"Jefe de Ventas 2",tel:""}],
+        vendedores:[], repositores:[]})),
   stock: [],      // {id, tdId, tipo, cantidad}
   colocados: [],
   sesion: null
@@ -461,6 +462,10 @@ async function cargarDatos(){
 }
 
 function normalizar(){
+  estado.tds.forEach(t=>{
+    if(!t.vendedores) t.vendedores = [];
+    if(!t.repositores) t.repositores = [];
+  });
   estado.colocados.forEach(c=>{
     if(c.canon!==undefined && c.canonFijo===undefined){ c.canonFijo = c.canon; delete c.canon; }
     if(c.canonVariable===undefined) c.canonVariable = "";
@@ -495,30 +500,84 @@ function pintarTDs(){
       <span class="td-num"><span><b>${st}</b>en stock</span><span><b>${co}</b>colocados</span></span></button>`;
   }).join("");
 }
+let perfil = null;
 function hojaPerfil(soloId){
-  const lista = soloId ? estado.tds.filter(t=>t.id===soloId) : estado.tds;
-  abrirHoja(`<div class="hoja-cab"><button class="equis" onclick="atras()"><b>←</b>Volver</button><h3>Jefes de Ventas</h3></div>
-    <p class="bajada">A estos números llegan los controles por WhatsApp.</p>
-    ${lista.map(t=>{ const i = estado.tds.indexOf(t);
-      return `<div class="bloque"><h5 style="color:${COLORES[i]}">${esc(t.nombre)}</h5>
-        <div class="campo"><label>Zona</label><input id="zon${i}" value="${esc(t.zona)}" placeholder="Pinamar y Cariló"></div>
-        ${[0,1].map(j=>`<div class="dupla">
-          <div class="campo"><label>Jefe de Ventas ${j+1}</label><input id="jn${i}_${j}" value="${esc(t.jefes[j].nombre)}"></div>
-          <div class="campo"><label>WhatsApp</label><input id="jt${i}_${j}" type="tel" value="${esc(t.jefes[j].tel)}" placeholder="54 9 223 5551234"></div>
-        </div>`).join("")}
-        <p class="pista">Con 54 9 adelante y sin el 15.</p></div>`;}).join("")}
-    <button class="btn ancho" onclick="guardarPerfil()">Guardar</button>`);
+  if(!soloId){
+    abrirHoja(`<div class="hoja-cab"><button class="equis" onclick="atras()"><b>←</b>Volver</button><h3>Equipos por TD</h3></div>
+      <p class="bajada">Elegí el distribuidor para cargar sus Jefes de Ventas, vendedores y repositores.</p>
+      <div class="tarjetas">${estado.tds.map((t,i)=>`
+        <div class="tarjeta" onclick="hojaPerfil('${t.id}')">
+          <span class="tarjeta-ico" style="--c:${COLORES[i]}">${t.nombre.split(" ").filter(p=>p.length>2).slice(0,2).map(p=>p[0]).join("").toUpperCase()}</span>
+          <div class="tarjeta-cuerpo"><h4>${esc(t.nombre)}</h4>
+            <p class="sub">${esc(t.zona||"Sin zona")}</p>
+            <div class="etiquetas">
+              <span class="etiqueta">${(t.jefes||[]).filter(j=>j.tel).length} JV</span>
+              <span class="etiqueta">${(t.vendedores||[]).length} vendedores</span>
+              <span class="etiqueta">${(t.repositores||[]).length} repositores</span>
+            </div></div></div>`).join("")}</div>`);
+    return;
+  }
+  perfil = JSON.parse(JSON.stringify(estado.tds.find(t=>t.id===soloId)));
+  perfil.vendedores = perfil.vendedores||[]; perfil.repositores = perfil.repositores||[];
+  pintarPerfil();
+}
+function leerPerfil(){
+  if(!document.getElementById("p_zona")) return;
+  perfil.zona = document.getElementById("p_zona").value;
+  [0,1].forEach(j=>{ perfil.jefes[j] = {nombre:document.getElementById("pj_n"+j).value, tel:document.getElementById("pj_t"+j).value}; });
+  ["vendedores","repositores"].forEach(g=>{
+    perfil[g] = perfil[g].map((_,i)=>({nombre:document.getElementById(g+"_n"+i).value, tel:document.getElementById(g+"_t"+i).value}));
+  });
+}
+function agregarAEquipo(g){ leerPerfil(); perfil[g].push({nombre:"",tel:""}); pintarPerfil(); }
+function quitarDeEquipo(g,i){ leerPerfil(); perfil[g].splice(i,1); pintarPerfil(); }
+function pintarPerfil(){
+  const color = COLORES[estado.tds.findIndex(t=>t.id===perfil.id)];
+  const equipo = (g, titulo, ayuda) => `
+    <div class="bloque"><h5>${titulo}</h5>
+      ${perfil[g].length?perfil[g].map((p,i)=>`
+        <div class="dupla" style="align-items:end">
+          <div class="campo" style="margin-bottom:8px"><label>Nombre</label>
+            <input id="${g}_n${i}" value="${esc(p.nombre)}" placeholder="Nombre y apellido"></div>
+          <div class="campo" style="margin-bottom:8px;display:flex;gap:8px;align-items:end">
+            <div style="flex:1"><label>WhatsApp</label>
+              <input id="${g}_t${i}" type="tel" value="${esc(p.tel)}" placeholder="54 9 223 5551234"></div>
+            <button class="circulo" style="background:#FFE9EB;color:var(--rojo)" onclick="quitarDeEquipo('${g}',${i})" aria-label="Quitar">✕</button>
+          </div>
+        </div>`).join("") : `<p class="pista" style="margin:0 0 12px">${ayuda}</p>`}
+      <button class="btn chica suave" onclick="agregarAEquipo('${g}')">+ Agregar</button>
+    </div>`;
+  abrirHoja(`
+    <div class="hoja-cab"><button class="equis" onclick="atras()"><b>←</b>Volver</button><h3>${esc(perfil.nombre)}</h3></div>
+    <div class="bloque"><h5 style="color:${color}">Zona</h5>
+      <div class="campo" style="margin:0"><label>Zona que cubre</label>
+        <input id="p_zona" value="${esc(perfil.zona||"")}" placeholder="Pinamar y Cariló"></div></div>
+    <div class="bloque"><h5>Jefes de Ventas</h5>
+      ${[0,1].map(j=>`<div class="dupla">
+        <div class="campo"><label>Jefe de Ventas ${j+1}</label>
+          <input id="pj_n${j}" value="${esc(perfil.jefes[j].nombre)}"></div>
+        <div class="campo"><label>WhatsApp</label>
+          <input id="pj_t${j}" type="tel" value="${esc(perfil.jefes[j].tel)}" placeholder="54 9 223 5551234"></div>
+      </div>`).join("")}</div>
+    ${equipo("vendedores","Vendedores","Todavía no hay vendedores cargados en este TD.")}
+    ${equipo("repositores","Repositores","Todavía no hay repositores cargados en este TD.")}
+    <p class="pista" style="margin:0 0 14px">Los teléfonos van con 54 9 adelante y sin el 15.</p>
+    <button class="btn ancho" onclick="guardarPerfil()">Guardar</button>`,
+    ()=>hojaPerfil());
 }
 function guardarPerfil(){
-  estado.tds.forEach((t,i)=>{
-    const z = document.getElementById("zon"+i); if(!z) return;
-    t.zona = z.value.trim();
-    t.jefes = [0,1].map(j=>({nombre:document.getElementById(`jn${i}_${j}`).value.trim()||("Jefe de Ventas "+(j+1)),
-                             tel:document.getElementById(`jt${i}_${j}`).value.trim()}));
-    sincronizar("tds",t);
+  leerPerfil();
+  ["vendedores","repositores"].forEach(g=>{
+    perfil[g] = perfil[g].map(p=>({nombre:p.nombre.trim(), tel:p.tel.trim()})).filter(p=>p.nombre);
   });
+  perfil.zona = (perfil.zona||"").trim();
+  perfil.jefes = perfil.jefes.map((j,i)=>({nombre:j.nombre.trim()||("Jefe de Ventas "+(i+1)), tel:j.tel.trim()}));
+  const i = estado.tds.findIndex(t=>t.id===perfil.id);
+  estado.tds[i] = perfil;
+  sincronizar("tds",perfil);
   pintarTDs(); cerrarHoja(); if(estado.sesion) render();
 }
+const equipoTD = (tdId,g) => (estado.tds.find(t=>t.id===tdId)||{})[g] || [];
 const jefesConTel = tdId => (estado.tds.find(t=>t.id===tdId).jefes||[]).filter(j=>j.tel.replace(/\D/g,"").length>=8);
 
 let tdElegido=null, rolElegido="jv";
@@ -694,6 +753,7 @@ function abrirColocado(id, tipo){
     : {id:"c"+Date.now(), tdId:estado.sesion.tdId, tipo: tipo||TIPOS[0].n, cantidad:1,
        cliente:"", razonSocial:"", direccion:"", localidad:"", medidas:"",
        fechaFirma:"", comodatoFotos:[], exhibicion:"", canonFijo:"", canonVariable:"",
+       jv:null, vendedor:null, repositor:null,
        fotos:[], controles:[], por:estado.sesion.usuario, fecha:hoy()};
   borrador.cantidad = +borrador.cantidad||1;
   borrador.cantidadOriginal = nuevo ? 0 : borrador.cantidad;
@@ -746,6 +806,14 @@ function abrirColocado(id, tipo){
       <p class="pista">Puede ser uno, el otro o los dos. Dejá en blanco el que no corresponda.</p>
     </div>
 
+    <div class="bloque"><h5>Responsables</h5>
+      <p class="pista" style="margin:-6px 0 12px">A quién se le avisa cuando el relevador pasa por este mueble.</p>
+      ${selectorPersona("jv","Jefe de Ventas", (estado.tds.find(t=>t.id===borrador.tdId).jefes||[]), borrador.jv)}
+      ${selectorPersona("vendedor","Vendedor", equipoTD(borrador.tdId,"vendedores"), borrador.vendedor)}
+      ${selectorPersona("repositor","Repositor", equipoTD(borrador.tdId,"repositores"), borrador.repositor)}
+      <button class="btn chica suave" onclick="hojaPerfil('${borrador.tdId}')">Editar los equipos del TD</button>
+    </div>
+
     <div class="bloque"><h5>Foto del comodato</h5>
       <p class="pista" style="margin:-6px 0 12px">Sin la foto firmada el mueble queda marcado en la lista.</p>
       <div class="fotos" id="fotos_comodato"></div></div>
@@ -772,6 +840,21 @@ function pintarBloque(){
     : `Bloque de <b>${n}</b> mueble${n===1?"":"s"}. Salen ${salen} del stock` +
       (hay>=salen ? `: van a quedar ${hay-salen}.` : `, pero en el TD hay ${hay}.`);
 }
+function selectorPersona(campo, titulo, gente, elegido){
+  const nom = elegido ? elegido.nombre : "";
+  return `<div class="campo"><label>${titulo}</label>
+    <select id="f_${campo}">
+      <option value="">— sin asignar —</option>
+      ${gente.filter(p=>p.nombre).map(p=>`<option value="${esc(p.nombre)}" ${p.nombre===nom?"selected":""}>${esc(p.nombre)}${p.tel?"":" (sin teléfono)"}</option>`).join("")}
+      ${nom && !gente.some(p=>p.nombre===nom) ? `<option value="${esc(nom)}" selected>${esc(nom)}</option>` : ""}
+    </select></div>`;
+}
+function tomarPersona(campo, gente){
+  const v = document.getElementById("f_"+campo).value;
+  if(!v) return null;
+  const p = gente.find(x=>x.nombre===v);
+  return p ? {nombre:p.nombre, tel:p.tel} : {nombre:v, tel:""};
+}
 function guardarColocado(esNuevo){
   const v = id => document.getElementById(id).value;
   Object.assign(borrador,{
@@ -779,7 +862,10 @@ function guardarColocado(esNuevo){
     direccion:v("f_direccion").trim(), localidad:v("f_localidad").trim(),
     medidas:v("f_medidas").trim(), cantidad: Math.max(1, +v("f_cantidad")||1),
     fechaFirma:v("f_firma"), exhibicion:v("f_exhibicion"),
-    canonFijo:v("f_canonFijo"), canonVariable:v("f_canonVariable")});
+    canonFijo:v("f_canonFijo"), canonVariable:v("f_canonVariable"),
+    jv: tomarPersona("jv", (estado.tds.find(t=>t.id===borrador.tdId).jefes||[])),
+    vendedor: tomarPersona("vendedor", equipoTD(borrador.tdId,"vendedores")),
+    repositor: tomarPersona("repositor", equipoTD(borrador.tdId,"repositores"))});
   delete borrador.canon;
   if(!borrador.cliente){ alert("Falta el nombre del cliente."); return; }
   if(!borrador.comodatoFotos.length && !confirm("Falta la foto del comodato. ¿Guardar igual?")) return;
@@ -826,6 +912,9 @@ function fichaControl(id){
       <div class="dato-linea"><span>Canon fijo</span><b>${plata(c.canonFijo)||"—"}</b></div>
       <div class="dato-linea"><span>Canon variable</span><b>${c.canonVariable?c.canonVariable+"% de la venta":"—"}</b></div>
       <div class="dato-linea"><span>Colocó</span><b>${esc(c.por)} · ${esc(c.fecha)}</b></div>
+      ${c.jv?`<div class="dato-linea"><span>Jefe de Ventas</span><b>${esc(c.jv.nombre)}</b></div>`:""}
+      ${c.vendedor?`<div class="dato-linea"><span>Vendedor</span><b>${esc(c.vendedor.nombre)}</b></div>`:""}
+      ${c.repositor?`<div class="dato-linea"><span>Repositor</span><b>${esc(c.repositor.nombre)}</b></div>`:""}
     </div>
     ${c.comodatoFotos.length?`<div class="bloque"><h5>El comodato</h5>${galeria(c.comodatoFotos)}</div>`
       :`<div class="cartel alerta">No hay foto del comodato cargada.</div>`}
@@ -1009,6 +1098,10 @@ function textoMensaje(c){
   const com = (c.comodatoFotos||[]).map(linkFoto).filter(Boolean);
   if(com.length){ L.push(""); L.push("📄 Comodato:"); com.forEach(x=>L.push(x)); }
   if(u.geo){ L.push(""); L.push("📍 "+geoLink(u.geo)); }
+  const eq = [];
+  if(c.vendedor) eq.push("Vendedor: "+c.vendedor.nombre);
+  if(c.repositor) eq.push("Repositor: "+c.repositor.nombre);
+  if(eq.length){ L.push(""); L.push("👥 "+eq.join(" · ")); }
   L.push("");
   L.push("🕵️ Revisó "+u.por+" · "+u.fecha+" "+(u.hora||""));
   if(u.veredicto==="obs"){
@@ -1019,29 +1112,58 @@ function textoMensaje(c){
   return L.join("\n");
 }
 const telLimpio = t => { let d=String(t||"").replace(/\D/g,""); return !d?"":(d.startsWith("54")?d:"54"+d); };
-function pantallaEnvio(id){
+let destinoTab = "jv", msgTexto = "";
+function candidatos(c, tab){
+  const td = estado.tds.find(t=>t.id===c.tdId) || {};
+  const lista = tab==="jv" ? (td.jefes||[])
+              : tab==="vendedor" ? (td.vendedores||[])
+              : (td.repositores||[]);
+  const asignado = tab==="jv" ? c.jv : tab==="vendedor" ? c.vendedor : c.repositor;
+  const salida = [];
+  if(asignado && asignado.nombre){
+    const enLista = lista.find(p=>p.nombre===asignado.nombre);
+    salida.push({nombre:asignado.nombre, tel:(enLista&&enLista.tel)||asignado.tel||"", asignado:true});
+  }
+  lista.forEach(p=>{ if(p.nombre && !salida.some(x=>x.nombre===p.nombre)) salida.push({nombre:p.nombre, tel:p.tel, asignado:false}); });
+  return salida.filter(p=>telLimpio(p.tel).length>=10);
+}
+function cambiarDestino(id, tab){
+  const t = document.getElementById("msg"); if(t) msgTexto = t.value;
+  destinoTab = tab; pantallaEnvio(id, true);
+}
+function pantallaEnvio(id, mantener){
   const c = estado.colocados.find(x=>x.id===id), u = ultimo(c), ok = u.veredicto==="ok";
-  const jefes = jefesConTel(c.tdId);
+  if(!mantener){ msgTexto = textoMensaje(c); destinoTab = "jv"; }
+  const gente = candidatos(c, destinoTab);
+  const nombreTab = {jv:"Jefe de Ventas", vendedor:"vendedores", repositor:"repositores"}[destinoTab];
   abrirHoja(`
     <div class="hoja-cab"><button class="equis" onclick="atras()"><b>←</b>Volver</button><h3>${ok?"Aprobado":"Observado"}</h3></div>
     <div class="bloque"><div class="exito"><span class="emo">${ok?"🎉":"🔧"}</span>
       <h3>${ok?"Todo en orden":"Hay que arreglarlo"}</h3>
-      <p>Avisale al Jefe de Ventas${(u.fotos||[]).length?" con las "+u.fotos.length+" fotos":""}.</p></div></div>
+      <p>Avisale a quien corresponda${(u.fotos||[]).length?", con las "+u.fotos.length+" fotos":""}.</p></div></div>
     <div class="bloque"><h5>Mensaje</h5>
-      <textarea class="mensaje" id="msg">${esc(textoMensaje(c))}</textarea>
+      <textarea class="mensaje" id="msg">${esc(msgTexto)}</textarea>
       <p class="pista">Podés editarlo antes de mandarlo.</p></div>
-    <div class="bloque"><h5>Enviar</h5>
-      ${jefes.length ? jefes.map(j=>`<button class="btn wasap ancho" style="margin-bottom:10px"
-          onclick="mandar('${id}','${esc(j.tel)}')">💬 Mandar a ${esc(j.nombre)}</button>`).join("")
-        : `<div class="cartel alerta">Este TD no tiene cargado el WhatsApp del Jefe de Ventas.</div>
-           <button class="btn ancho suave" style="margin-bottom:10px" onclick="hojaPerfil('${c.tdId}')">Cargar el teléfono</button>`}
+    <div class="bloque"><h5>¿A quién se lo mandás?</h5>
+      <div class="filtritos">
+        ${[["jv","Jefe de Ventas"],["vendedor","Vendedor"],["repositor","Repositor"]].map(([v,l])=>
+          `<button class="filtrito" aria-pressed="${destinoTab===v}" onclick="cambiarDestino('${id}','${v}')">${l}</button>`).join("")}
+      </div>
+      ${gente.length ? gente.map(p=>`<button class="btn wasap ancho" style="margin-bottom:10px"
+            onclick="mandar('${id}','${esc(p.tel)}','${esc(p.nombre)}')">💬 ${esc(p.nombre)}${p.asignado?" (asignado)":""}</button>`).join("")
+        : `<div class="cartel alerta">No hay ${esc(nombreTab)} con WhatsApp cargado en este TD.</div>
+           <button class="btn ancho suave" style="margin-bottom:10px" onclick="hojaPerfil('${c.tdId}')">Cargar teléfonos del TD</button>`}
       <button class="btn ancho suave" onclick="copiar()">📋 Copiar el mensaje</button></div>
+    ${(u.avisados||[]).length?`<div class="cartel verde">Ya se le mandó a: ${esc(u.avisados.join(", "))}</div>`:""}
     <button class="btn ancho" onclick="cerrarHoja()">Listo</button>`);
 }
-function mandar(id, tel){
+function mandar(id, tel, nombre){
   const texto = document.getElementById("msg").value;
+  msgTexto = texto;
   const c = estado.colocados.find(x=>x.id===id), u = ultimo(c);
   u.enviado = true; u.fechaEnvio = hoy();
+  u.avisados = u.avisados || [];
+  if(nombre && !u.avisados.includes(nombre)) u.avisados.push(nombre);
   guardarCache();                     // primero se guarda, después se sale de la app
   sincronizar("colocados",c); render();
   window.open("https://wa.me/"+telLimpio(tel)+"?text="+encodeURIComponent(texto),"_blank");
@@ -1149,20 +1271,21 @@ function exportar(cual){
   let filas;
   if(cual==="controles"){
     filas = [["TD","Cliente","Razón social","Localidad","Mueble","Fecha","Hora","Veredicto","Estado",
-      "Motivos","Detalle","% real","% pactado","Cumple","Revisó","Avisado","Resuelto por","Ubicación","Fotos"]];
+      "Motivos","Detalle","% real","% pactado","Cumple","Revisó","Avisado a","Resuelto por","Ubicación","Fotos"]];
     misCol().forEach(c=>(c.controles||[]).forEach(u=>filas.push([td.nombre,c.cliente,c.razonSocial,c.localidad,c.tipo,
       u.fecha,u.hora||"",u.veredicto==="ok"?"Aprobado":"Observado",
       u.veredicto==="ok"?"":(u.estado==="resuelta"?"Resuelto":"Abierto"),
       (u.motivos||[]).join(" | "),u.comentario||"",u.real!=null?u.real:"",c.exhibicion||"",
       (u.real!=null&&c.exhibicion)?(u.real>=(+c.exhibicion)-5?"Sí":"No"):"",
-      u.por,u.enviado?"Sí":"No",u.resolucion?u.resolucion.por:"",geoLink(u.geo),
+      u.por,(u.avisados||[]).join(" | ")||(u.enviado?"Sí":"No"),u.resolucion?u.resolucion.por:"",geoLink(u.geo),
       (u.fotos||[]).map(linkFoto).filter(Boolean).join(" ")])));
   }else{
     filas = [["TD","Zona","Cliente","Razón social","Dirección","Localidad","Mueble","Cantidad","Medidas","Fecha de firma",
-      "Foto comodato","% pactado","Canon fijo","Canon variable %","% real último","Cumple","Estado","Controles","Colocó","Fecha"]];
+      "Foto comodato","% pactado","Canon fijo","Canon variable %","JV","Vendedor","Repositor","% real último","Cumple","Estado","Controles","Colocó","Fecha"]];
     misCol().forEach(c=>{ const u = ultimo(c);
       filas.push([td.nombre,td.zona,c.cliente,c.razonSocial,c.direccion,c.localidad,c.tipo,+c.cantidad||1,c.medidas||"",c.fechaFirma,
         (c.comodatoFotos||[]).map(linkFoto).filter(Boolean).join(" ")||"No",c.exhibicion||"",c.canonFijo||"",c.canonVariable||"",
+        c.jv?c.jv.nombre:"",c.vendedor?c.vendedor.nombre:"",c.repositor?c.repositor.nombre:"",
         u&&u.real!=null?u.real:"",cumple(c)===null?"":(cumple(c)?"Sí":"No"),
         estadoCol(c).t,(c.controles||[]).length,c.por,c.fecha]); });
   }
