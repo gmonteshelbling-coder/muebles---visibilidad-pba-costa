@@ -424,7 +424,7 @@ function marcarLinea(ok){
   enLinea = ok;
   const b = document.getElementById("aviso-linea");
   b.style.display = ok ? "none" : "block";
-  b.textContent = cola.length ? "Sin conexión: "+cola.length+" cambio(s) esperando. Se suben solos."
+  b.textContent = cola.length ? "⚠️ "+cola.length+" cambio(s) sin guardar en el servidor. Se reintenta solo."
                               : "Sin conexión. Estás trabajando sobre la copia del teléfono.";
 }
 async function cargarDatos(){
@@ -434,17 +434,25 @@ async function cargarDatos(){
       if(d.tds) estado.tds=d.tds; if(d.stock) estado.stock=d.stock;
       if(d.colocados) estado.colocados=d.colocados; if(d.cola) cola=d.cola; }
   }catch(_){}
-  pintarTDs();
+  normalizar(); pintarTDs();
   if(!API){ marcarLinea(false); return; }
   try{
     await vaciarCola();
     const d = await api({accion:"listar"});
     if(d.tds && d.tds.length) estado.tds = d.tds;
     estado.stock = d.stock||[]; estado.colocados = d.colocados||[];
-    marcarLinea(true); guardarCache(); pintarTDs();
+    marcarLinea(true); normalizar(); guardarCache(); pintarTDs();
     if(estado.sesion) render();
     verLink();
   }catch(e){ marcarLinea(false); }
+}
+
+function normalizar(){
+  estado.colocados.forEach(c=>{
+    if(c.canon!==undefined && c.canonFijo===undefined){ c.canonFijo = c.canon; delete c.canon; }
+    if(c.canonVariable===undefined) c.canonVariable = "";
+    if(!c.cantidad) c.cantidad = 1;
+  });
 }
 
 /* ═══════════ NAVEGACIÓN ═══════════ */
@@ -628,7 +636,8 @@ function tarjetaCol(c, paraControl){
         <span class="etiqueta uva">${(+c.cantidad||1)>1?(c.cantidad+" × "):""}${esc(c.tipo)}</span>
         ${c.medidas?`<span class="etiqueta">${esc(c.medidas)}</span>`:""}
         ${c.exhibicion?`<span class="etiqueta ${ok===false?"alerta":"agua"}">${u&&u.real!=null?u.real+"% real / ":""}${c.exhibicion}% pactado</span>`:""}
-        ${c.canon?`<span class="etiqueta sol">${plata(c.canon)}</span>`:""}
+        ${c.canonFijo?`<span class="etiqueta sol">Fijo ${plata(c.canonFijo)}</span>`:""}
+        ${c.canonVariable?`<span class="etiqueta sol">Var. ${c.canonVariable}%</span>`:""}
         ${c.comodatoFotos.length?"":`<span class="etiqueta alerta">Falta foto del comodato</span>`}
         ${u?`<span class="etiqueta">${diasDesde(u.iso)===0?"revisado hoy":"hace "+diasDesde(u.iso)+" d"}</span>`:""}
         ${u&&!u.enviado?`<span class="etiqueta alerta">Falta avisar al JV</span>`:""}
@@ -671,7 +680,7 @@ function abrirColocado(id, tipo){
   borrador = id ? JSON.parse(JSON.stringify(estado.colocados.find(c=>c.id===id)))
     : {id:"c"+Date.now(), tdId:estado.sesion.tdId, tipo: tipo||TIPOS[0].n, cantidad:1,
        cliente:"", razonSocial:"", direccion:"", localidad:"", medidas:"",
-       fechaFirma:"", comodatoFotos:[], exhibicion:"", canon:"",
+       fechaFirma:"", comodatoFotos:[], exhibicion:"", canonFijo:"", canonVariable:"",
        fotos:[], controles:[], por:estado.sesion.usuario, fecha:hoy()};
   borrador.cantidad = +borrador.cantidad||1;
   borrador.cantidadOriginal = nuevo ? 0 : borrador.cantidad;
@@ -713,12 +722,15 @@ function abrirColocado(id, tipo){
     <div class="bloque"><h5>El acuerdo</h5>
       <div class="campo"><label>Fecha de firma del comodato</label>
         <input id="f_firma" type="date" value="${borrador.fechaFirma}"></div>
+      <div class="campo"><label>% pactado de exhibición</label>
+        <input id="f_exhibicion" type="number" min="0" max="100" value="${borrador.exhibicion}" placeholder="80"></div>
       <div class="dupla">
-        <div class="campo" style="margin:0"><label>% pactado de exhibición</label>
-          <input id="f_exhibicion" type="number" min="0" max="100" value="${borrador.exhibicion}" placeholder="80"></div>
-        <div class="campo" style="margin:0"><label>Canon mensual ($)</label>
-          <input id="f_canon" type="number" min="0" value="${borrador.canon}" placeholder="0"></div>
+        <div class="campo" style="margin:0"><label>Canon fijo ($ por mes)</label>
+          <input id="f_canonFijo" type="number" min="0" value="${borrador.canonFijo||""}" placeholder="0"></div>
+        <div class="campo" style="margin:0"><label>Canon variable (% de venta)</label>
+          <input id="f_canonVariable" type="number" min="0" step="0.1" value="${borrador.canonVariable||""}" placeholder="0"></div>
       </div>
+      <p class="pista">Puede ser uno, el otro o los dos. Dejá en blanco el que no corresponda.</p>
     </div>
 
     <div class="bloque"><h5>Foto del comodato</h5>
@@ -753,7 +765,9 @@ function guardarColocado(esNuevo){
     cliente:v("f_cliente").trim(), razonSocial:v("f_razon").trim(),
     direccion:v("f_direccion").trim(), localidad:v("f_localidad").trim(),
     medidas:v("f_medidas").trim(), cantidad: Math.max(1, +v("f_cantidad")||1),
-    fechaFirma:v("f_firma"), exhibicion:v("f_exhibicion"), canon:v("f_canon")});
+    fechaFirma:v("f_firma"), exhibicion:v("f_exhibicion"),
+    canonFijo:v("f_canonFijo"), canonVariable:v("f_canonVariable")});
+  delete borrador.canon;
   if(!borrador.cliente){ alert("Falta el nombre del cliente."); return; }
   if(!borrador.comodatoFotos.length && !confirm("Falta la foto del comodato. ¿Guardar igual?")) return;
   const salen = borrador.cantidad - (borrador.cantidadOriginal||0);
@@ -796,7 +810,8 @@ function fichaControl(id){
       <div class="dato-linea"><span>Dirección</span><b>${esc(c.direccion||"—")}${c.localidad?", "+esc(c.localidad):""}</b></div>
       <div class="dato-linea"><span>Comodato firmado</span><b>${esc(c.fechaFirma||"sin fecha")}</b></div>
       <div class="dato-linea"><span>Exhibición pactada</span><b>${c.exhibicion?c.exhibicion+"%":"—"}</b></div>
-      <div class="dato-linea"><span>Canon mensual</span><b>${plata(c.canon)||"—"}</b></div>
+      <div class="dato-linea"><span>Canon fijo</span><b>${plata(c.canonFijo)||"—"}</b></div>
+      <div class="dato-linea"><span>Canon variable</span><b>${c.canonVariable?c.canonVariable+"% de la venta":"—"}</b></div>
       <div class="dato-linea"><span>Colocó</span><b>${esc(c.por)} · ${esc(c.fecha)}</b></div>
     </div>
     ${c.comodatoFotos.length?`<div class="bloque"><h5>El comodato</h5>${galeria(c.comodatoFotos)}</div>`
@@ -963,7 +978,9 @@ function textoMensaje(c){
   L.push("🪵 "+((+c.cantidad||1)>1 ? "Bloque de "+c.cantidad+" · " : "")+c.tipo+(c.medidas?" · "+c.medidas:""));
   if(c.fechaFirma) L.push("📄 Comodato firmado el "+c.fechaFirma);
   if(c.exhibicion) L.push("🤝 Exhibición pactada: "+c.exhibicion+"%");
-  if(c.canon) L.push("💵 Canon: "+plata(c.canon));
+  if(c.canonFijo||c.canonVariable) L.push("💵 Canon: "+
+    (c.canonFijo?plata(c.canonFijo)+" fijo":"sin fijo")+
+    (c.canonVariable?" + "+c.canonVariable+"% de la venta":""));
   if(u.real!=null) L.push((c.exhibicion && u.real < (+c.exhibicion)-5 ? "📉 " : "📊 ")+"Exhibición real: "+u.real+"%"+
     (c.exhibicion ? (u.real>=(+c.exhibicion)-5 ? " · cumple" : " · NO cumple, faltan "+((+c.exhibicion)-u.real)+" puntos") : ""));
   L.push("");
@@ -1066,7 +1083,7 @@ function vistaResumen(){
   const col = misCol();
   const conPct = col.filter(c=>c.exhibicion && ultimo(c) && ultimo(c).real!=null);
   const cumplen = conPct.filter(c=>cumple(c)===true);
-  const canonRiesgo = conPct.filter(c=>cumple(c)===false).reduce((a,c)=>a+(+c.canon||0),0);
+  const canonRiesgo = conPct.filter(c=>cumple(c)===false).reduce((a,c)=>a+(+c.canonFijo||0),0);
   return `<h2 class="titulazo">Resumen</h2>
     <p class="bajada">${esc(td.nombre)}${td.zona?" · "+esc(td.zona):""}</p>
     <div class="numeritos">
@@ -1080,7 +1097,8 @@ function vistaResumen(){
         <div class="barrita"><i style="width:${Math.round(cumplen.length*100/conPct.length)}%"></i></div>
         <div class="dato-linea"><span>Canon en muebles que no cumplen</span><b style="color:var(--rojo)">${plata(canonRiesgo)||"$ 0"}</b></div>`
         :`<p class="pista" style="margin:0">Todavía no hay controles con % de exhibición cargado.</p>`}
-      <div class="dato-linea"><span>Canon mensual total</span><b>${plata(col.reduce((a,c)=>a+(+c.canon||0),0))||"$ 0"}</b></div>
+      <div class="dato-linea"><span>Canon fijo mensual total</span><b>${plata(col.reduce((a,c)=>a+(+c.canonFijo||0),0))||"$ 0"}</b></div>
+      <div class="dato-linea"><span>Acuerdos con canon variable</span><b>${col.filter(c=>+c.canonVariable>0).length}</b></div>
       <div class="dato-linea"><span>Sin foto del comodato</span><b>${col.filter(c=>!c.comodatoFotos.length).length}</b></div>
     </div>
     <div class="bloque"><h5>Jefes de Ventas</h5>
@@ -1126,10 +1144,10 @@ function exportar(cual){
       (u.fotos||[]).map(linkFoto).filter(Boolean).join(" ")])));
   }else{
     filas = [["TD","Zona","Cliente","Razón social","Dirección","Localidad","Mueble","Cantidad","Medidas","Fecha de firma",
-      "Foto comodato","% pactado","Canon","% real último","Cumple","Estado","Controles","Colocó","Fecha"]];
+      "Foto comodato","% pactado","Canon fijo","Canon variable %","% real último","Cumple","Estado","Controles","Colocó","Fecha"]];
     misCol().forEach(c=>{ const u = ultimo(c);
       filas.push([td.nombre,td.zona,c.cliente,c.razonSocial,c.direccion,c.localidad,c.tipo,+c.cantidad||1,c.medidas||"",c.fechaFirma,
-        (c.comodatoFotos||[]).map(linkFoto).filter(Boolean).join(" ")||"No",c.exhibicion||"",c.canon||"",
+        (c.comodatoFotos||[]).map(linkFoto).filter(Boolean).join(" ")||"No",c.exhibicion||"",c.canonFijo||"",c.canonVariable||"",
         u&&u.real!=null?u.real:"",cumple(c)===null?"":(cumple(c)?"Sí":"No"),
         estadoCol(c).t,(c.controles||[]).length,c.por,c.fecha]); });
   }
