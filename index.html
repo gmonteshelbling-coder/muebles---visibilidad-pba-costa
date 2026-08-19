@@ -460,7 +460,7 @@ window.addEventListener("popstate", ()=>{
 function pintarTDs(){
   document.getElementById("rejillaTD").innerHTML = estado.tds.map((t,i)=>{
     const st = estado.stock.filter(s=>s.tdId===t.id).reduce((a,s)=>a+(+s.cantidad||0),0);
-    const co = estado.colocados.filter(c=>c.tdId===t.id).length;
+    const co = estado.colocados.filter(c=>c.tdId===t.id).reduce((a,c)=>a+(+c.cantidad||1),0);
     const ini = t.nombre.split(" ").filter(p=>p.length>2).slice(0,2).map(p=>p[0]).join("").toUpperCase();
     return `<button class="td" style="--c:${COLORES[i]}" onclick="elegirTD('${t.id}')">
       <span class="td-globo">${ini}</span>
@@ -552,7 +552,7 @@ function vistaStock(){
     <p class="bajada">Muebles físicos en el depósito. Al colocar uno, sale del stock y pasa a Colocados.</p>
     <div class="numeritos">
       <div class="numerito" style="--c:var(--turquesa)"><b>${total}</b><span>En depósito</span></div>
-      <div class="numerito" style="--c:var(--naranja)"><b>${misCol().length}</b><span>Colocados</span></div>
+      <div class="numerito" style="--c:var(--naranja)"><b>${misCol().reduce((a,c)=>a+(+c.cantidad||1),0)}</b><span>Colocados</span></div>
     </div>
     <div class="stock">
       ${TIPOS.map(t=>`<div class="mueble" style="--c:${t.c}">
@@ -590,13 +590,15 @@ function sumarStock(tipo){
   s.por = estado.sesion.usuario; s.fecha = hoy();
   sincronizar("stock",s); render(); cerrarHoja();
 }
-function descontar(tipo){
-  const s = miStock(tipo);
-  if(!s || (+s.cantidad||0)<=0) return false;
-  s.cantidad = (+s.cantidad)-1;
+/** n positivo saca muebles del stock, n negativo los devuelve. */
+function moverStock(tipo, n){
+  if(!n) return;
+  let s = miStock(tipo);
+  if(!s){ s = {id:estado.sesion.tdId+"-"+TIPOS.findIndex(t=>t.n===tipo), tdId:estado.sesion.tdId,
+    tipo, cantidad:0, fotos:[], por:"", fecha:""}; estado.stock.push(s); }
+  s.cantidad = Math.max(0, (+s.cantidad||0) - n);
   s.por = estado.sesion.usuario; s.fecha = hoy();
   sincronizar("stock",s);
-  return true;
 }
 
 /* ═══════════ MUEBLES COLOCADOS ═══════════ */
@@ -618,7 +620,7 @@ function tarjetaCol(c, paraControl){
       <h4>${esc(c.cliente)}</h4>
       <p class="sub">${esc(c.razonSocial||"")}${c.localidad?" · "+esc(c.localidad):""}</p>
       <div class="etiquetas">
-        <span class="etiqueta uva">${esc(c.tipo)}</span>
+        <span class="etiqueta uva">${(+c.cantidad||1)>1?(c.cantidad+" × "):""}${esc(c.tipo)}</span>
         ${c.medidas?`<span class="etiqueta">${esc(c.medidas)}</span>`:""}
         ${c.exhibicion?`<span class="etiqueta ${ok===false?"alerta":"agua"}">${u&&u.real!=null?u.real+"% real / ":""}${c.exhibicion}% pactado</span>`:""}
         ${c.canon?`<span class="etiqueta sol">${plata(c.canon)}</span>`:""}
@@ -662,10 +664,12 @@ function vistaColocados(paraControl){
 function abrirColocado(id, tipo){
   const nuevo = !id;
   borrador = id ? JSON.parse(JSON.stringify(estado.colocados.find(c=>c.id===id)))
-    : {id:"c"+Date.now(), tdId:estado.sesion.tdId, tipo: tipo||TIPOS[0].n,
+    : {id:"c"+Date.now(), tdId:estado.sesion.tdId, tipo: tipo||TIPOS[0].n, cantidad:1,
        cliente:"", razonSocial:"", direccion:"", localidad:"", medidas:"",
        fechaFirma:"", comodatoFotos:[], exhibicion:"", canon:"",
        fotos:[], controles:[], por:estado.sesion.usuario, fecha:hoy()};
+  borrador.cantidad = +borrador.cantidad||1;
+  borrador.cantidadOriginal = nuevo ? 0 : borrador.cantidad;
   objetivos = {mueble:borrador.fotos, comodato:borrador.comodatoFotos};
   const t = tipoInfo(borrador.tipo);
   abrirHoja(`
@@ -718,20 +722,34 @@ function abrirColocado(id, tipo){
       ${nuevo?"":`<button class="btn chica suave" onclick="borrarColocado('${borrador.id}')">Eliminar</button>`}
       <button class="btn ancho" onclick="guardarColocado(${nuevo})">${nuevo?"Colocar el mueble":"Guardar cambios"}</button>
     </div>`);
-  pintarFotos("comodato"); pintarFotos("mueble");
+  pintarFotos("comodato"); pintarFotos("mueble"); pintarBloque();
+}
+function pintarBloque(){
+  const campo = document.getElementById("f_cantidad"), txt = document.getElementById("bloqueTxt");
+  if(!campo || !txt) return;
+  const n = Math.max(1, +campo.value||1);
+  const hay = cuantos(borrador.tipo), previos = borrador.cantidadOriginal||0;
+  const salen = n - previos;
+  txt.innerHTML = salen<=0
+    ? `Bloque de <b>${n}</b> mueble${n===1?"":"s"} en este cliente.`
+    : `Bloque de <b>${n}</b> mueble${n===1?"":"s"}. Salen ${salen} del stock` +
+      (hay>=salen ? `: van a quedar ${hay-salen}.` : `, pero en el TD hay ${hay}.`);
 }
 function guardarColocado(esNuevo){
   const v = id => document.getElementById(id).value;
   Object.assign(borrador,{
     cliente:v("f_cliente").trim(), razonSocial:v("f_razon").trim(),
     direccion:v("f_direccion").trim(), localidad:v("f_localidad").trim(),
-    medidas:v("f_medidas").trim(),
+    medidas:v("f_medidas").trim(), cantidad: Math.max(1, +v("f_cantidad")||1),
     fechaFirma:v("f_firma"), exhibicion:v("f_exhibicion"), canon:v("f_canon")});
   if(!borrador.cliente){ alert("Falta el nombre del cliente."); return; }
   if(!borrador.comodatoFotos.length && !confirm("Falta la foto del comodato. ¿Guardar igual?")) return;
+  const salen = borrador.cantidad - (borrador.cantidadOriginal||0);
+  if(salen>0 && cuantos(borrador.tipo)<salen &&
+     !confirm("En el stock hay "+cuantos(borrador.tipo)+" de "+borrador.tipo+" y estás colocando "+salen+". ¿Seguir igual?")) return;
+  moverStock(borrador.tipo, salen);
+  delete borrador.cantidadOriginal;
   if(esNuevo){
-    if(cuantos(borrador.tipo)<=0 && !confirm("No hay stock de "+borrador.tipo+" en el TD. ¿Colocarlo igual?")) return;
-    descontar(borrador.tipo);
     estado.colocados.push(borrador);
   }else{
     const i = estado.colocados.findIndex(c=>c.id===borrador.id);
@@ -740,7 +758,10 @@ function guardarColocado(esNuevo){
   sincronizar("colocados",borrador); render(); cerrarHoja();
 }
 function borrarColocado(id){
-  if(!confirm("Se elimina el mueble y su historial de controles. ¿Seguir?")) return;
+  const c = estado.colocados.find(x=>x.id===id);
+  const n = +c.cantidad||1;
+  if(!confirm("Se elimina la ficha y su historial. Los "+n+" mueble(s) vuelven al stock del TD. ¿Seguir?")) return;
+  moverStock(c.tipo, -n);
   estado.colocados = estado.colocados.filter(c=>c.id!==id);
   guardarCache(); api({accion:"borrar",tipo:"colocados",id}).catch(()=>{});
   render(); cerrarHoja();
@@ -757,7 +778,7 @@ function fichaControl(id){
     ${abierta(c)?`<div class="cartel alerta">Quedó una observación sin resolver del ${esc(ultimo(c).fecha)}.</div>`:""}
 
     <div class="bloque"><h5>El acuerdo</h5>
-      <div class="dato-linea"><span>Mueble</span><b>${esc(c.tipo)}</b></div>
+      <div class="dato-linea"><span>Mueble</span><b>${(+c.cantidad||1)>1?"Bloque de "+c.cantidad+" · ":""}${esc(c.tipo)}</b></div>
       ${c.medidas?`<div class="dato-linea"><span>Medidas</span><b>${esc(c.medidas)}</b></div>`:""}
       <div class="dato-linea"><span>Razón social</span><b>${esc(c.razonSocial||"—")}</b></div>
       <div class="dato-linea"><span>Dirección</span><b>${esc(c.direccion||"—")}${c.localidad?", "+esc(c.localidad):""}</b></div>
@@ -927,7 +948,7 @@ function textoMensaje(c){
   L.push("");
   L.push("🏪 "+c.cliente+(c.razonSocial?" ("+c.razonSocial+")":""));
   if(c.direccion||c.localidad) L.push(c.direccion+(c.localidad?", "+c.localidad:""));
-  L.push("🪵 "+c.tipo+(c.medidas?" · "+c.medidas:""));
+  L.push("🪵 "+((+c.cantidad||1)>1 ? "Bloque de "+c.cantidad+" · " : "")+c.tipo+(c.medidas?" · "+c.medidas:""));
   if(c.fechaFirma) L.push("📄 Comodato firmado el "+c.fechaFirma);
   if(c.exhibicion) L.push("🤝 Exhibición pactada: "+c.exhibicion+"%");
   if(c.canon) L.push("💵 Canon: "+plata(c.canon));
@@ -1092,10 +1113,10 @@ function exportar(cual){
       u.por,u.enviado?"Sí":"No",u.resolucion?u.resolucion.por:"",geoLink(u.geo),
       (u.fotos||[]).map(linkFoto).filter(Boolean).join(" ")])));
   }else{
-    filas = [["TD","Zona","Cliente","Razón social","Dirección","Localidad","Mueble","Medidas","Fecha de firma",
+    filas = [["TD","Zona","Cliente","Razón social","Dirección","Localidad","Mueble","Cantidad","Medidas","Fecha de firma",
       "Foto comodato","% pactado","Canon","% real último","Cumple","Estado","Controles","Colocó","Fecha"]];
     misCol().forEach(c=>{ const u = ultimo(c);
-      filas.push([td.nombre,td.zona,c.cliente,c.razonSocial,c.direccion,c.localidad,c.tipo,c.medidas||"",c.fechaFirma,
+      filas.push([td.nombre,td.zona,c.cliente,c.razonSocial,c.direccion,c.localidad,c.tipo,+c.cantidad||1,c.medidas||"",c.fechaFirma,
         (c.comodatoFotos||[]).map(linkFoto).filter(Boolean).join(" ")||"No",c.exhibicion||"",c.canon||"",
         u&&u.real!=null?u.real:"",cumple(c)===null?"":(cumple(c)?"Sí":"No"),
         estadoCol(c).t,(c.controles||[]).length,c.por,c.fecha]); });
