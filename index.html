@@ -349,7 +349,7 @@ h1,h2,h3,h4{font-family:var(--display);font-weight:600;letter-spacing:-.01em;mar
 /* ═══════════ CONFIGURACIÓN ═══════════ */
 const API = "https://script.google.com/macros/s/AKfycbz86hwFpiVDC8vV10BVGw5x1L0l9va41ac13g449QgaY0z4jq2AFsYDqEa0_BO83D0/exec";
 const CLAVE_APP = "costa2026";
-const VERSION = "v13 · cuadrícula y bajas";
+const VERSION = "v14 · historial de visitas";
 const ALMACEN = "carameleras-v4";
 
 const TIPOS = [
@@ -413,11 +413,9 @@ function estadoCol(c){
   const u = ultimo(c);
   if(!u) return {k:"pendiente", t:"Sin revisar"};
   if(u.veredicto==="ok") return {k:"ok", t:"Aprobado"};
-  if(u.estado==="resuelta") return {k:"ok", t:"Resuelto"};
-  if(u.estado==="gestion") return {k:"gestion", t:"En gestión"};
   return {k:"obs", t:"Observado"};
 }
-const abierta = c => { const u=ultimo(c); return u && u.veredicto==="obs" && u.estado!=="resuelta"; };
+const abierta = c => { const u=ultimo(c); return !!u && u.veredicto==="obs"; };
 const cumple = c => { const u=ultimo(c); if(!u || u.real===null || u.real===undefined || !c.exhibicion) return null;
   return (+u.real) >= (+c.exhibicion)-5; };
 
@@ -480,7 +478,6 @@ async function cargarDatos(){
     estado.colocados = fusionar(estado.colocados, d.colocados||[]);
     marcarLinea(true); normalizar(); guardarCache(); pintarTDs();
     if(estado.sesion) render();
-    verLink();
   }catch(e){ marcarLinea(false); }
 }
 
@@ -730,7 +727,7 @@ function pieCuadro(c){
   if(col==="blanco") return u ? "Sin visitar hace "+diasDesde(u.iso)+" días" : "Nunca visitado";
   const d = diasDesde(u.iso), cuando = d===0 ? "hoy" : d===1 ? "ayer" : "hace "+d+" días";
   if(u.veredicto==="ok") return "Aprobado "+cuando;
-  return (u.estado==="resuelta" ? "Resuelto · observado " : "Observado ")+cuando;
+  return "Observado "+cuando;
 }
 function cuadroCol(c, paraControl){
   const col = colorCuadro(c), u = ultimo(c);
@@ -867,6 +864,7 @@ function abrirColocado(id, tipo){
     <div class="bloque"><h5>Foto del mueble colocado</h5>
       <div class="fotos" id="fotos_mueble"></div></div>
 
+    ${!nuevo && (borrador.controles||[]).length?`<div class="bloque"><h5>Últimas visitas</h5>${historial(borrador)}</div>`:""}
     ${nuevo||borrador.baja?"":`<div class="bloque"><h5>Baja del mueble</h5>
       <p class="pista" style="margin:-6px 0 12px">Si el mueble se retira del cliente, dalo de baja: ${borrador.cantidad||1} vuelve${(borrador.cantidad||1)===1?"":"n"} al stock del TD.</p>
       <button class="btn rojo ancho" onclick="hojaBaja('${borrador.id}')">↩ Dar de baja y devolver al stock</button></div>`}
@@ -976,14 +974,15 @@ function borrarColocado(id){
 }
 
 /* ═══════════ FICHA DE CONTROL ═══════════ */
-function fichaControl(id){
+function fichaControl(id, mantenerHistorial){
   const c = estado.colocados.find(x=>x.id===id);
+  if(!mantenerHistorial) verTodas = false;
   objetivos = {control:[]};
   const t = tipoInfo(c.tipo);
   const galeria = arr => `<div class="fotos">${(arr||[]).map(f=>`<a class="foto" href="${linkFoto(f)||srcFoto(f)}" target="_blank" rel="noopener"><img src="${srcFoto(f)}" alt="" loading="lazy"></a>`).join("")}</div>`;
   abrirHoja(`
     <div class="hoja-cab"><button class="equis" onclick="atras()"><b>←</b>Volver</button><h3>${esc(c.cliente)}</h3></div>
-    ${abierta(c)?`<div class="cartel alerta">Quedó una observación sin resolver del ${esc(ultimo(c).fecha)}.</div>`:""}
+    ${abierta(c)?`<div class="cartel alerta">En la última visita quedó observado. Lo que cargues ahora reemplaza ese estado.</div>`:""}
 
     <div class="bloque"><h5>El acuerdo</h5>
       <div class="dato-linea"><span>Mueble</span><b>${(+c.cantidad||1)>1?"Bloque de "+c.cantidad+" · ":""}${esc(c.tipo)}</b></div>
@@ -999,6 +998,9 @@ function fichaControl(id){
       ${c.vendedor?`<div class="dato-linea"><span>Vendedor</span><b>${esc(c.vendedor.nombre)}</b></div>`:""}
       ${c.repositor?`<div class="dato-linea"><span>Repositor</span><b>${esc(c.repositor.nombre)}</b></div>`:""}
     </div>
+    ${(c.controles||[]).length
+      ? `<div class="bloque"><h5>Últimas visitas</h5>${historial(c)}</div>`
+      : `<div class="cartel uva">Primera visita a este mueble.</div>`}
     ${c.comodatoFotos.length?`<div class="bloque"><h5>El comodato</h5>${galeria(c.comodatoFotos)}</div>`
       :`<div class="cartel alerta">No hay foto del comodato cargada.</div>`}
     ${c.fotos.length?`<div class="bloque"><h5>Cómo se colocó</h5>${galeria(c.fotos)}</div>`:""}
@@ -1033,7 +1035,6 @@ function fichaControl(id){
       <button class="btn rojo ancho" onclick="observar('${c.id}')">Guardar y avisar al JV</button>
     </div>
 
-    ${(c.controles||[]).length?`<div class="bloque" style="margin-top:12px"><h5>Historial</h5>${historial(c)}</div>`:""}
     ${estado.sesion.rol==="jv"?`<button class="btn ancho suave" onclick="abrirColocado('${c.id}')">✏️ Editar el acuerdo</button>`:""}`);
   pintarFotos("control"); calcPct(); pedirGeo();
 }
@@ -1048,20 +1049,27 @@ function calcPct(){
     : (pact ? p+"% real contra "+pact+"% pactado · "+(p>=pact-5?"cumple":"no cumple, faltan "+(pact-p)+" puntos")
             : p+"% del mueble con producto nuestro");
 }
+let verTodas = false;
 function historial(c){
-  return `<div class="linea-tiempo">`+[...c.controles].reverse().map(u=>{
-    const col = (u.veredicto==="ok"||u.estado==="resuelta") ? "var(--verde)" : u.estado==="gestion" ? "var(--violeta)" : "var(--rojo)";
+  const todas = [...c.controles].reverse();
+  const lista = verTodas ? todas : todas.slice(0,3);
+  const resto = todas.length - lista.length;
+  return `<div class="linea-tiempo">` + lista.map(u=>{
+    const col = u.veredicto==="ok" ? "var(--verde)" : "var(--rojo)";
     return `<div class="hito" style="--c:${col}">
-      <b>${u.veredicto==="ok"?"Aprobado":"Observado"}${u.estado==="resuelta"?" · resuelto":u.estado==="gestion"?" · en gestión":""}</b>
+      <b>${u.veredicto==="ok"?"Aprobado":"Observado"}</b>
       <span>${esc(u.fecha)} ${esc(u.hora||"")} · ${esc(u.por)}${u.real!=null?" · "+u.real+"% real":""}</span>
       ${(u.motivos||[]).length?`<ul>${u.motivos.map(m=>`<li>${esc(m)}</li>`).join("")}</ul>`:""}
       ${u.comentario?`<p style="font-size:13.5px;font-weight:600;margin:6px 0 0">${esc(u.comentario)}</p>`:""}
-      ${u.resolucion?`<p style="font-size:13px;font-weight:700;color:var(--verde);margin:6px 0 0">Resuelto por ${esc(u.resolucion.por)} el ${esc(u.resolucion.fecha)}</p>`:""}
+      ${(u.avisados||[]).length?`<p style="font-size:12.5px;font-weight:700;color:var(--tinta-2);margin:6px 0 0">Avisado a ${esc(u.avisados.join(", "))}</p>`:""}
       ${(u.fotos||[]).length?`<div class="fotos" style="margin-top:8px">${u.fotos.map(f=>`<a class="foto" href="${linkFoto(f)||srcFoto(f)}" target="_blank" rel="noopener"><img src="${srcFoto(f)}" loading="lazy" alt=""></a>`).join("")}</div>`:""}
-      ${u.veredicto==="obs"&&u.estado!=="resuelta"?`<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
-        <button class="btn chica verde" onclick="resolver('${c.id}','${u.id}')">Marcar resuelto</button></div>`:""}
-    </div>`;}).join("")+`</div>`;
+      ${u.geo?`<a class="link" style="padding-left:0" href="${geoLink(u.geo)}" target="_blank" rel="noopener">Dónde se hizo</a>`:""}
+    </div>`;}).join("")
+    + `</div>`
+    + (resto>0 ? `<button class="btn chica suave" onclick="verTodas=true;fichaControl('${c.id}',true)">Ver las ${resto} visitas anteriores</button>`
+      : (verTodas && todas.length>3 ? `<button class="btn chica suave" onclick="verTodas=false;fichaControl('${c.id}',true)">Ver solo las últimas tres</button>` : ""));
 }
+
 function nuevoControl(veredicto, motivos, comentario){
   const a = new Date();
   const campo = document.getElementById("pct");
@@ -1070,7 +1078,7 @@ function nuevoControl(veredicto, motivos, comentario){
     veredicto, motivos, comentario,
     real: (campo && campo.value!=="") ? Math.max(0,Math.min(100,+campo.value)) : null,
     fotos: objetivos.control||[], geo:geoActual, por:estado.sesion.usuario,
-    estado: veredicto==="ok"?"cerrado":"abierta", resolucion:null, enviado:false};
+    enviado:false, avisados:[]};
 }
 function aprobar(id){
   const c = estado.colocados.find(x=>x.id===id);
@@ -1085,16 +1093,6 @@ function observar(id){
   c.controles = c.controles||[]; c.controles.push(nuevoControl("obs",motivos,com));
   sincronizar("colocados",c); render(); pantallaEnvio(id);
 }
-function resolver(idc, idk){
-  const c = estado.colocados.find(x=>x.id===idc);
-  const u = c.controles.find(k=>k.id===idk); if(!u) return;
-  u.estado = "resuelta";
-  u.resolucion = {por: estado.sesion?estado.sesion.usuario:"JV", fecha:hoy(), nota:""};
-  sincronizar("colocados",c);
-  if(estado.sesion) render();
-  fichaControl(idc);
-}
-
 /* ═══════════ UBICACIÓN ═══════════ */
 function pedirGeo(){
   geoActual = null; pintarGeo();
@@ -1187,11 +1185,6 @@ function textoMensaje(c){
   if(eq.length){ L.push(""); L.push("👥 "+eq.join(" · ")); }
   L.push("");
   L.push("🕵️ Revisó "+u.por+" · "+u.fecha+" "+(u.hora||""));
-  if(u.veredicto==="obs"){
-    L.push("");
-    L.push("👉 Cuando esté resuelto, marcalo acá:");
-    L.push(location.origin+location.pathname+"#pdv="+c.id);
-  }
   return L.join("\n");
 }
 const telLimpio = t => { let d=String(t||"").replace(/\D/g,""); return !d?"":(d.startsWith("54")?d:"54"+d); };
@@ -1257,46 +1250,6 @@ function copiar(){
                       : (t.select(), document.execCommand("copy"), alert("Mensaje copiado."));
 }
 
-/* ═══════════ EL JV ABRE EL LINK ═══════════ */
-function verLink(){
-  const m = /[#&]pdv=([^&]+)/.exec(location.hash); if(!m) return;
-  const c = estado.colocados.find(x=>x.id===decodeURIComponent(m[1])); if(!c) return;
-  const u = ultimo(c); if(!u) return;
-  const td = estado.tds.find(t=>t.id===c.tdId);
-  abrirHoja(`
-    <div class="hoja-cab"><button class="equis" onclick="cerrarLink()"><b>←</b>Cerrar</button><h3>${esc(c.cliente)}</h3></div>
-    <div class="cartel ${u.veredicto==="ok"?"verde":"alerta"}">
-      ${u.veredicto==="ok"?"Aprobado":"Observado"} el ${esc(u.fecha)} · ${esc(td.nombre)} · revisó ${esc(u.por)}</div>
-    <div class="bloque"><h5>Qué se encontró</h5>
-      ${(u.motivos||[]).length?`<ul style="margin:0 0 10px;padding-left:18px;font-weight:600">${u.motivos.map(m=>`<li>${esc(m)}</li>`).join("")}</ul>`:"<p style='font-weight:600'>Sin observaciones.</p>"}
-      ${u.comentario?`<p style="font-weight:600">${esc(u.comentario)}</p>`:""}
-      ${u.real!=null?`<div class="dato-linea"><span>Exhibición real</span><b>${u.real}%${c.exhibicion?" de "+c.exhibicion+"% pactado":""}</b></div>`:""}
-      <div class="dato-linea"><span>Dirección</span><b>${esc(c.direccion||"—")}${c.localidad?", "+esc(c.localidad):""}</b></div>
-      <div class="fotos" style="margin-top:10px">${(u.fotos||[]).map(f=>`<a class="foto" href="${linkFoto(f)||srcFoto(f)}" target="_blank" rel="noopener"><img src="${srcFoto(f)}" loading="lazy" alt=""></a>`).join("")}</div>
-    </div>
-    ${u.estado==="resuelta"
-      ? `<div class="cartel verde">Ya figura resuelto por ${esc(u.resolucion?u.resolucion.por:"")}.</div>`
-      : `<div class="bloque"><h5>Actualizar</h5>
-          <div class="campo"><label>Tu nombre</label><input id="jv_n" placeholder="Jefe de Ventas"></div>
-          <div class="campo"><label>Contraseña</label><input id="jv_c" type="password" placeholder="••••••••"></div>
-          <div class="error" id="jv_e"></div>
-          <button class="btn verde ancho" onclick="resolverLink('${c.id}','${u.id}')">Ya está resuelto</button></div>`}
-    <button class="btn ancho suave" onclick="cerrarLink()">Cerrar</button>`);
-}
-function cerrarLink(){ history.replaceState(null,"",location.pathname); cerrarHoja(); }
-function resolverLink(idc, idk){
-  const n = document.getElementById("jv_n").value.trim();
-  if(!n){ document.getElementById("jv_e").textContent="Poné tu nombre."; return; }
-  if(document.getElementById("jv_c").value!==CLAVE_APP){ document.getElementById("jv_e").textContent="La contraseña no coincide."; return; }
-  const c = estado.colocados.find(x=>x.id===idc), u = c.controles.find(k=>k.id===idk);
-  u.estado="resuelta"; u.resolucion={por:n,fecha:hoy(),nota:""};
-  sincronizar("colocados",c); if(estado.sesion) render();
-  abrirHoja(`<div class="hoja-cab"><button class="equis" onclick="cerrarLink()"><b>←</b>Cerrar</button><h3>Listo</h3></div>
-    <div class="bloque"><div class="exito"><span class="emo">✅</span><h3>Marcado como resuelto</h3>
-      <p>El equipo lo ve al instante.</p></div></div>
-    <button class="btn ancho" onclick="cerrarLink()">Cerrar</button>`);
-}
-
 /* ═══════════ RESUMEN ═══════════ */
 function vistaResumen(){
   const td = estado.tds.find(t=>t.id===estado.sesion.tdId);
@@ -1354,14 +1307,14 @@ function exportar(cual){
   const slug = td.nombre.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g,"-").toLowerCase();
   let filas;
   if(cual==="controles"){
-    filas = [["TD","Cliente","Razón social","Localidad","Mueble","Fecha","Hora","Veredicto","Estado",
-      "Motivos","Detalle","% real","% pactado","Cumple","Revisó","Avisado a","Resuelto por","Ubicación","Fotos"]];
+    filas = [["TD","Cliente","Razón social","Localidad","Mueble","Fecha","Hora","Veredicto",
+      "Motivos","Detalle","% real","% pactado","Cumple","Revisó","Avisado a","Ubicación","Fotos"]];
     misCol().forEach(c=>(c.controles||[]).forEach(u=>filas.push([td.nombre,c.cliente,c.razonSocial,c.localidad,c.tipo,
       u.fecha,u.hora||"",u.veredicto==="ok"?"Aprobado":"Observado",
       u.veredicto==="ok"?"":(u.estado==="resuelta"?"Resuelto":"Abierto"),
       (u.motivos||[]).join(" | "),u.comentario||"",u.real!=null?u.real:"",c.exhibicion||"",
       (u.real!=null&&c.exhibicion)?(u.real>=(+c.exhibicion)-5?"Sí":"No"):"",
-      u.por,(u.avisados||[]).join(" | ")||(u.enviado?"Sí":"No"),u.resolucion?u.resolucion.por:"",geoLink(u.geo),
+      u.por,(u.avisados||[]).join(" | ")||(u.enviado?"Sí":"No"),geoLink(u.geo),
       (u.fotos||[]).map(linkFoto).filter(Boolean).join(" ")])));
   }else{
     filas = [["TD","Zona","Cliente","Razón social","Dirección","Localidad","Mueble","Cantidad","Medidas","Fecha de firma",
