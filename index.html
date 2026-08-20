@@ -134,6 +134,11 @@ h1,h2,h3,h4{font-family:var(--display);font-weight:600;letter-spacing:-.01em;mar
 .circulo.mas{background:var(--verde);color:#fff}
 .circulo.sale{background:var(--violeta);color:#fff;font-size:17px}
 .grande{font-family:var(--display);font-weight:700;font-size:30px;line-height:1;color:var(--c)}
+.dos-num{display:flex;gap:6px;margin-top:5px}
+.dos-num span{font-size:11.5px;font-weight:800;border-radius:8px;padding:3px 8px}
+.dos-num .nuevo{background:#E2F8FB;color:#008DA1}
+.dos-num .usado{background:#FFF4D9;color:#A97A00}
+.dos-num .cero{background:#F4EFF8;color:#A99BB8}
 
 /* tarjetas */
 .buscador{width:100%;background:#fff;border:2px solid var(--linea);border-radius:99px;padding:13px 18px;
@@ -349,7 +354,7 @@ h1,h2,h3,h4{font-family:var(--display);font-weight:600;letter-spacing:-.01em;mar
 /* ═══════════ CONFIGURACIÓN ═══════════ */
 const API = "https://script.google.com/macros/s/AKfycbz86hwFpiVDC8vV10BVGw5x1L0l9va41ac13g449QgaY0z4jq2AFsYDqEa0_BO83D0/exec";
 const CLAVE_APP = "costa2026";
-const VERSION = "v14 · historial de visitas";
+const VERSION = "v15 · nuevos y usados";
 const ALMACEN = "carameleras-v4";
 
 const TIPOS = [
@@ -482,6 +487,8 @@ async function cargarDatos(){
 }
 
 function normalizar(){
+  estado.stock.forEach(s=>{ if(!s.condicion) s.condicion = "nuevo"; });
+  estado.colocados.forEach(c=>{ if(!c.condicion) c.condicion = "nuevo"; });
   estado.tds.forEach(t=>{
     if(!t.vendedores) t.vendedores = [];
     if(!t.repositores) t.repositores = [];
@@ -647,35 +654,49 @@ function verSolapa(id){ vista=id; textoBusqueda=""; pagina=0; pintarBarra(); ren
 function nuevoAqui(){ elegirTipoParaColocar(); }
 
 /* ═══════════ STOCK DEL TD ═══════════ */
-const miStock = tipo => estado.stock.find(s=>s.tdId===estado.sesion.tdId && s.tipo===tipo);
-const cuantos = tipo => { const s = miStock(tipo); return s ? (+s.cantidad||0) : 0; };
+const CONDICIONES = ["nuevo","usado"];
+const rotuloCond = c => c==="usado" ? "usado" : "nuevo";
+const miStock = (tipo, cond) => estado.stock.find(s=>s.tdId===estado.sesion.tdId && s.tipo===tipo
+  && (s.condicion||"nuevo")===cond);
+const cuantos = (tipo, cond) => { const s = miStock(tipo, cond); return s ? (+s.cantidad||0) : 0; };
+const cuantosTotal = tipo => cuantos(tipo,"nuevo") + cuantos(tipo,"usado");
 const misCol = () => estado.colocados.filter(c=>c.tdId===estado.sesion.tdId);
 
 function vistaStock(){
-  const total = TIPOS.reduce((a,t)=>a+cuantos(t.n),0);
+  const nuevos = TIPOS.reduce((a,t)=>a+cuantos(t.n,"nuevo"),0);
+  const usados = TIPOS.reduce((a,t)=>a+cuantos(t.n,"usado"),0);
   return `<h2 class="titulazo">Stock del TD</h2>
     <p class="bajada">Muebles físicos en el depósito. Al colocar uno, sale del stock y pasa a Colocados.</p>
     <div class="numeritos">
-      <div class="numerito" style="--c:var(--turquesa)"><b>${total}</b><span>En depósito</span></div>
+      <div class="numerito" style="--c:var(--turquesa)"><b>${nuevos}</b><span>Nuevos</span></div>
+      <div class="numerito" style="--c:var(--amarillo)"><b>${usados}</b><span>Usados</span></div>
       <div class="numerito" style="--c:var(--naranja)"><b>${misCol().filter(c=>!c.baja).reduce((a,c)=>a+(+c.cantidad||1),0)}</b><span>Colocados</span></div>
     </div>
     <div class="stock">
-      ${TIPOS.map(t=>`<div class="mueble" style="--c:${t.c}">
+      ${TIPOS.map(t=>{ const n = cuantos(t.n,"nuevo"), u = cuantos(t.n,"usado");
+        return `<div class="mueble" style="--c:${t.c}">
         <span class="mueble-ico">${t.i}</span>
-        <span class="mueble-txt"><b>${t.n}</b><span>${cuantos(t.n)===0?"sin stock":cuantos(t.n)+" en depósito"}</span></span>
-        <span class="grande">${cuantos(t.n)}</span>
+        <span class="mueble-txt"><b>${t.n}</b>
+          <span class="dos-num">
+            <span class="${n?"nuevo":"cero"}">${n} nuevo${n===1?"":"s"}</span>
+            <span class="${u?"usado":"cero"}">${u} usado${u===1?"":"s"}</span>
+          </span></span>
+        <span class="grande">${n+u}</span>
         <span class="mueble-acc">
           <button class="circulo mas" onclick="hojaAgregar('${esc(t.n)}')" aria-label="Agregar">+</button>
           <button class="circulo sale" onclick="abrirColocado(null,'${esc(t.n)}')" aria-label="Colocar">→</button>
-        </span></div>`).join("")}
+        </span></div>`;}).join("")}
     </div>
-    <p class="pista" style="margin-top:16px">El <b>+</b> suma muebles que llegaron al depósito. La <b>flecha</b> los saca para colocarlos en un punto de venta.</p>`;
+    <p class="pista" style="margin-top:16px">El <b>+</b> suma muebles que llegaron al depósito. La <b>flecha</b> los saca para colocarlos.
+      Los que vuelven de un cliente entran solos como <b>usados</b>.</p>`;
 }
 function hojaAgregar(tipo){
   objetivos = {stock:[]};
   abrirHoja(`<div class="hoja-cab"><button class="equis" onclick="atras()"><b>←</b>Volver</button><h3>Sumar al stock</h3></div>
-    <div class="cartel uva">${esc(tipo)} · hoy hay ${cuantos(tipo)} en el depósito</div>
+    <div class="cartel uva">${esc(tipo)} · hoy hay ${cuantos(tipo,"nuevo")} nuevos y ${cuantos(tipo,"usado")} usados</div>
     <div class="bloque"><h5>¿Cuántos llegaron?</h5>
+      <div class="campo"><label>Estado</label>
+        <select id="s_cond"><option value="nuevo">Nuevos</option><option value="usado">Usados</option></select></div>
       <div class="campo" style="margin:0"><label>Cantidad</label>
         <input id="s_cant" type="number" min="1" value="1"></div>
       <div class="atajos">${[1,2,5,10].map(v=>`<button class="atajo" onclick="document.getElementById('s_cant').value=${v}">${v}</button>`).join("")}</div>
@@ -686,21 +707,22 @@ function hojaAgregar(tipo){
 }
 function sumarStock(tipo){
   const n = +document.getElementById("s_cant").value||0;
+  const cond = document.getElementById("s_cond").value;
   if(n<1){ alert("Poné cuántos muebles llegaron."); return; }
-  let s = miStock(tipo);
-  if(!s){ s = {id:estado.sesion.tdId+"-"+TIPOS.findIndex(t=>t.n===tipo), tdId:estado.sesion.tdId,
-    tipo, cantidad:0, fotos:[], por:"", fecha:""}; estado.stock.push(s); }
-  s.cantidad = (+s.cantidad||0)+n;
+  moverStock(tipo, cond, -n);
+  const s = miStock(tipo, cond);
   s.fotos = (s.fotos||[]).concat(objetivos.stock||[]);
-  s.por = estado.sesion.usuario; s.fecha = hoy();
   sincronizar("stock",s); render(); cerrarHoja();
 }
 /** n positivo saca muebles del stock, n negativo los devuelve. */
-function moverStock(tipo, n){
+function moverStock(tipo, cond, n){
   if(!n) return;
-  let s = miStock(tipo);
-  if(!s){ s = {id:estado.sesion.tdId+"-"+TIPOS.findIndex(t=>t.n===tipo), tdId:estado.sesion.tdId,
-    tipo, cantidad:0, fotos:[], por:"", fecha:""}; estado.stock.push(s); }
+  let s = miStock(tipo, cond);
+  if(!s){
+    s = {id:estado.sesion.tdId+"-"+TIPOS.findIndex(t=>t.n===tipo)+(cond==="usado"?"-usado":""),
+      tdId:estado.sesion.tdId, tipo, condicion:cond, cantidad:0, fotos:[], por:"", fecha:""};
+    estado.stock.push(s);
+  }
   s.cantidad = Math.max(0, (+s.cantidad||0) - n);
   s.por = estado.sesion.usuario; s.fecha = hoy();
   sincronizar("stock",s);
@@ -713,7 +735,9 @@ function elegirTipoParaColocar(){
       ${TIPOS.map(t=>`<button class="mueble" style="--c:${t.c};width:100%;text-align:left;border:0;cursor:pointer"
         onclick="abrirColocado(null,'${esc(t.n)}')">
         <span class="mueble-ico">${t.i}</span>
-        <span class="mueble-txt"><b>${t.n}</b><span>${cuantos(t.n)} en el stock del TD</span></span>
+        <span class="mueble-txt"><b>${t.n}</b><span class="dos-num">
+          <span class="${cuantos(t.n,"nuevo")?"nuevo":"cero"}">${cuantos(t.n,"nuevo")} nuevos</span>
+          <span class="${cuantos(t.n,"usado")?"usado":"cero"}">${cuantos(t.n,"usado")} usados</span></span></span>
         <span class="grande">→</span></button>`).join("")}
     </div>`);
 }
@@ -737,7 +761,7 @@ function cuadroCol(c, paraControl){
         ${(+c.cantidad||1)>1?`<span class="etiqueta uva">${c.cantidad} muebles</span>`:""}
         ${u&&!u.enviado?`<span class="etiqueta alerta">sin avisar</span>`:""}</span>
       <b>${esc(c.cliente)}</b>
-      <span class="chico">${esc(c.tipo)}${c.localidad?" · "+esc(c.localidad):""}</span>
+      <span class="chico">${esc(c.tipo)}${c.condicion==="usado"?" (usado)":""}${c.localidad?" · "+esc(c.localidad):""}</span>
       ${c.exhibicion&&u&&u.real!=null?`<span class="chico">${u.real}% real / ${c.exhibicion}% pactado</span>`:""}
     </span>
     <span class="pie">${pieCuadro(c)}</span></button>`;
@@ -792,13 +816,15 @@ function vistaColocados(paraControl){
 function abrirColocado(id, tipo){
   const nuevo = !id;
   borrador = id ? JSON.parse(JSON.stringify(estado.colocados.find(c=>c.id===id)))
-    : {id:"c"+Date.now(), tdId:estado.sesion.tdId, tipo: tipo||TIPOS[0].n, cantidad:1,
+    : {id:"c"+Date.now(), tdId:estado.sesion.tdId, tipo: tipo||TIPOS[0].n, cantidad:1, condicion:"nuevo",
        cliente:"", razonSocial:"", direccion:"", localidad:"", medidas:"",
        fechaFirma:"", comodatoFotos:[], exhibicion:"", canonFijo:"", canonVariable:"",
        jv:null, vendedor:null, repositor:null,
        fotos:[], controles:[], por:estado.sesion.usuario, fecha:hoy()};
   borrador.cantidad = +borrador.cantidad||1;
+  borrador.condicion = borrador.condicion||"nuevo";
   borrador.cantidadOriginal = nuevo ? 0 : borrador.cantidad;
+  borrador.condicionOriginal = nuevo ? null : borrador.condicion;
   objetivos = {mueble:borrador.fotos, comodato:borrador.comodatoFotos};
   const t = tipoInfo(borrador.tipo);
   abrirHoja(`
@@ -810,6 +836,11 @@ function abrirColocado(id, tipo){
         <span class="mueble-ico">${t.i}</span>
         <span class="mueble-txt"><b>${esc(borrador.tipo)}</b><span>${cuantos(borrador.tipo)} en el stock del TD</span></span>
       </div>
+      <div class="campo"><label>¿Salen de nuevos o de usados?</label>
+        <select id="f_condicion" onchange="pintarBloque()">
+          <option value="nuevo" ${(borrador.condicion||"nuevo")==="nuevo"?"selected":""}>Nuevos (${cuantos(borrador.tipo,"nuevo")} en stock)</option>
+          <option value="usado" ${borrador.condicion==="usado"?"selected":""}>Usados (${cuantos(borrador.tipo,"usado")} en stock)</option>
+        </select></div>
       <div class="campo" style="margin:0"><label>¿Cuántos muebles van a este cliente?</label>
         <input id="f_cantidad" type="number" min="1" value="${borrador.cantidad||1}" oninput="pintarBloque()"></div>
       <div class="atajos">${[1,2,3,4,6,8].map(v=>`<button class="atajo" onclick="document.getElementById('f_cantidad').value=${v};pintarBloque()">${v}</button>`).join("")}</div>
@@ -879,12 +910,16 @@ function abrirColocado(id, tipo){
 function pintarBloque(){
   const campo = document.getElementById("f_cantidad"), txt = document.getElementById("bloqueTxt");
   if(!campo || !txt) return;
+  const sel = document.getElementById("f_condicion");
+  const cond = sel ? sel.value : (borrador.condicion||"nuevo");
   const n = Math.max(1, +campo.value||1);
-  const hay = cuantos(borrador.tipo), previos = borrador.cantidadOriginal||0;
+  const hay = cuantos(borrador.tipo, cond);
+  const mismaCond = cond === (borrador.condicionOriginal||cond);
+  const previos = mismaCond ? (borrador.cantidadOriginal||0) : 0;
   const salen = n - previos;
   txt.innerHTML = salen<=0
-    ? `Bloque de <b>${n}</b> mueble${n===1?"":"s"} en este cliente.`
-    : `Bloque de <b>${n}</b> mueble${n===1?"":"s"}. Salen ${salen} del stock` +
+    ? `Bloque de <b>${n}</b> mueble${n===1?"":"s"} ${rotuloCond(cond)}${n===1?"":"s"} en este cliente.`
+    : `Bloque de <b>${n}</b> mueble${n===1?"":"s"}. Salen ${salen} de ${rotuloCond(cond)}s` +
       (hay>=salen ? `: van a quedar ${hay-salen}.` : `, pero en el TD hay ${hay}.`);
 }
 function selectorPersona(campo, titulo, gente, elegido){
@@ -908,6 +943,7 @@ function guardarColocado(esNuevo){
     cliente:v("f_cliente").trim(), razonSocial:v("f_razon").trim(),
     direccion:v("f_direccion").trim(), localidad:v("f_localidad").trim(),
     medidas:v("f_medidas").trim(), cantidad: Math.max(1, +v("f_cantidad")||1),
+    condicion: v("f_condicion")||"nuevo",
     fechaFirma:v("f_firma"), exhibicion:v("f_exhibicion"),
     canonFijo:v("f_canonFijo"), canonVariable:v("f_canonVariable"),
     jv: tomarPersona("jv", (estado.tds.find(t=>t.id===borrador.tdId).jefes||[])),
@@ -916,11 +952,18 @@ function guardarColocado(esNuevo){
   delete borrador.canon;
   if(!borrador.cliente){ alert("Falta el nombre del cliente."); return; }
   if(!borrador.comodatoFotos.length && !confirm("Falta la foto del comodato. ¿Guardar igual?")) return;
-  const salen = borrador.cantidad - (borrador.cantidadOriginal||0);
-  if(salen>0 && cuantos(borrador.tipo)<salen &&
-     !confirm("En el stock hay "+cuantos(borrador.tipo)+" de "+borrador.tipo+" y estás colocando "+salen+". ¿Seguir igual?")) return;
-  moverStock(borrador.tipo, salen);
-  delete borrador.cantidadOriginal;
+  const condVieja = borrador.condicionOriginal, condNueva = borrador.condicion;
+  if(condVieja && condVieja!==condNueva){
+    moverStock(borrador.tipo, condVieja, -(borrador.cantidadOriginal||0));   // devuelve a la categoría anterior
+    moverStock(borrador.tipo, condNueva, borrador.cantidad);
+  }else{
+    const salen = borrador.cantidad - (borrador.cantidadOriginal||0);
+    if(salen>0 && cuantos(borrador.tipo,condNueva)<salen &&
+       !confirm("En el stock hay "+cuantos(borrador.tipo,condNueva)+" "+rotuloCond(condNueva)+"s de "+borrador.tipo+
+                " y estás colocando "+salen+". ¿Seguir igual?")) return;
+    moverStock(borrador.tipo, condNueva, salen);
+  }
+  delete borrador.cantidadOriginal; delete borrador.condicionOriginal;
   if(esNuevo){
     estado.colocados.push(borrador);
   }else{
@@ -938,7 +981,7 @@ function hojaBaja(id){
   abrirHoja(`
     <div class="hoja-cab"><button class="equis" onclick="atras()"><b>←</b>Volver</button><h3>Dar de baja</h3></div>
     <div class="cartel alerta">${esc(c.cliente)} · ${(+c.cantidad||1)} × ${esc(c.tipo)}.
-      Al confirmar vuelve${(+c.cantidad||1)===1?"":"n"} al stock del TD.</div>
+      Al confirmar vuelve${(+c.cantidad||1)===1?"":"n"} al stock del TD <b>como usado${(+c.cantidad||1)===1?"":"s"}</b>.</div>
     <div class="bloque"><h5>Por qué se retira</h5>
       <div class="campo"><label>Motivo</label>
         <select id="b_motivo">${MOTIVOS_BAJA.map(m=>`<option>${m}</option>`).join("")}</select></div>
@@ -958,16 +1001,16 @@ function confirmarBaja(id){
   c.baja = {fecha:hoy(), iso:new Date().toISOString(), por:estado.sesion.usuario,
     motivo:document.getElementById("b_motivo").value,
     nota:document.getElementById("b_nota").value.trim(), fotos:objetivos.baja};
-  moverStock(c.tipo, -n);
+  moverStock(c.tipo, "usado", -n);
   sincronizar("colocados",c);
   render(); cerrarHoja();
-  alert(n+" mueble"+(n===1?"":"s")+" de vuelta en el stock del TD.");
+  alert(n+" mueble"+(n===1?"":"s")+" de vuelta en el stock del TD, como usado"+(n===1?"":"s")+".");
 }
 function borrarColocado(id){
   const c = estado.colocados.find(x=>x.id===id);
   const n = +c.cantidad||1;
   if(!confirm("Se elimina la ficha y su historial. Los "+n+" mueble(s) vuelven al stock del TD. ¿Seguir?")) return;
-  moverStock(c.tipo, -n);
+  moverStock(c.tipo, c.condicion||"nuevo", -n);
   estado.colocados = estado.colocados.filter(c=>c.id!==id);
   guardarCache(); api({accion:"borrar",tipo:"colocados",id}).catch(()=>{});
   render(); cerrarHoja();
@@ -985,7 +1028,7 @@ function fichaControl(id, mantenerHistorial){
     ${abierta(c)?`<div class="cartel alerta">En la última visita quedó observado. Lo que cargues ahora reemplaza ese estado.</div>`:""}
 
     <div class="bloque"><h5>El acuerdo</h5>
-      <div class="dato-linea"><span>Mueble</span><b>${(+c.cantidad||1)>1?"Bloque de "+c.cantidad+" · ":""}${esc(c.tipo)}</b></div>
+      <div class="dato-linea"><span>Mueble</span><b>${(+c.cantidad||1)>1?"Bloque de "+c.cantidad+" · ":""}${esc(c.tipo)}${c.condicion==="usado"?" (usado)":""}</b></div>
       ${c.medidas?`<div class="dato-linea"><span>Medidas</span><b>${esc(c.medidas)}</b></div>`:""}
       <div class="dato-linea"><span>Razón social</span><b>${esc(c.razonSocial||"—")}</b></div>
       <div class="dato-linea"><span>Dirección</span><b>${esc(c.direccion||"—")}${c.localidad?", "+esc(c.localidad):""}</b></div>
@@ -1158,7 +1201,8 @@ function textoMensaje(c){
   L.push("");
   L.push("🏪 "+c.cliente+(c.razonSocial?" ("+c.razonSocial+")":""));
   if(c.direccion||c.localidad) L.push(c.direccion+(c.localidad?", "+c.localidad:""));
-  L.push("🪵 "+((+c.cantidad||1)>1 ? "Bloque de "+c.cantidad+" · " : "")+c.tipo+(c.medidas?" · "+c.medidas:""));
+  L.push("🪵 "+((+c.cantidad||1)>1 ? "Bloque de "+c.cantidad+" · " : "")+c.tipo+
+    (c.condicion==="usado"?" (usado)":"")+(c.medidas?" · "+c.medidas:""));
   if(c.fechaFirma) L.push("📄 Comodato firmado el "+c.fechaFirma);
   if(c.exhibicion) L.push("🤝 Exhibición pactada: "+c.exhibicion+"%");
   if(c.canonFijo||c.canonVariable) L.push("💵 Canon: "+
@@ -1260,7 +1304,8 @@ function vistaResumen(){
   return `<h2 class="titulazo">Resumen</h2>
     <p class="bajada">${esc(td.nombre)}${td.zona?" · "+esc(td.zona):""}</p>
     <div class="numeritos">
-      <div class="numerito" style="--c:var(--turquesa)"><b>${TIPOS.reduce((a,t)=>a+cuantos(t.n),0)}</b><span>En stock</span></div>
+      <div class="numerito" style="--c:var(--turquesa)"><b>${TIPOS.reduce((a,t)=>a+cuantos(t.n,"nuevo"),0)}</b><span>Nuevos</span></div>
+      <div class="numerito" style="--c:var(--amarillo)"><b>${TIPOS.reduce((a,t)=>a+cuantos(t.n,"usado"),0)}</b><span>Usados</span></div>
       <div class="numerito" style="--c:var(--naranja)"><b>${col.length}</b><span>Colocados</span></div>
       <div class="numerito" style="--c:var(--amarillo)"><b>${col.filter(c=>!ultimo(c)).length}</b><span>Sin revisar</span></div>
       <div class="numerito" style="--c:var(--rojo)"><b>${col.filter(abierta).length}</b><span>Observados</span></div>
@@ -1317,10 +1362,10 @@ function exportar(cual){
       u.por,(u.avisados||[]).join(" | ")||(u.enviado?"Sí":"No"),geoLink(u.geo),
       (u.fotos||[]).map(linkFoto).filter(Boolean).join(" ")])));
   }else{
-    filas = [["TD","Zona","Cliente","Razón social","Dirección","Localidad","Mueble","Cantidad","Medidas","Fecha de firma",
+    filas = [["TD","Zona","Cliente","Razón social","Dirección","Localidad","Mueble","Estado del mueble","Cantidad","Medidas","Fecha de firma",
       "Foto comodato","% pactado","Canon fijo","Canon variable %","JV","Vendedor","Repositor","% real último","Cumple","Estado","Controles","Colocó","Fecha","Baja","Motivo de la baja"]];
     misCol().forEach(c=>{ const u = ultimo(c);
-      filas.push([td.nombre,td.zona,c.cliente,c.razonSocial,c.direccion,c.localidad,c.tipo,+c.cantidad||1,c.medidas||"",c.fechaFirma,
+      filas.push([td.nombre,td.zona,c.cliente,c.razonSocial,c.direccion,c.localidad,c.tipo,c.condicion==="usado"?"Usado":"Nuevo",+c.cantidad||1,c.medidas||"",c.fechaFirma,
         (c.comodatoFotos||[]).map(linkFoto).filter(Boolean).join(" ")||"No",c.exhibicion||"",c.canonFijo||"",c.canonVariable||"",
         c.jv?c.jv.nombre:"",c.vendedor?c.vendedor.nombre:"",c.repositor?c.repositor.nombre:"",
         u&&u.real!=null?u.real:"",cumple(c)===null?"":(cumple(c)?"Sí":"No"),
